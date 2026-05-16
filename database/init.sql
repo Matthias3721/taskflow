@@ -1,6 +1,7 @@
 -- TaskFlow – schemat bazy danych PostgreSQL
 
 CREATE TYPE task_status AS ENUM ('todo', 'in_progress', 'done');
+CREATE TYPE project_status AS ENUM ('active', 'on_hold', 'completed');
 
 -- Role systemowe
 CREATE TABLE roles (
@@ -36,6 +37,7 @@ CREATE TABLE projects (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
+    status project_status NOT NULL DEFAULT 'active',
     owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP

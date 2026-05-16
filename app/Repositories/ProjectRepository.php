@@ -24,7 +24,9 @@ class ProjectRepository
     /** @return list<Project> */
     public function findByOwner(int $ownerId): array
     {
-        $stmt = $this->db->prepare('SELECT * FROM projects WHERE owner_id = :owner_id ORDER BY id');
+        $stmt = $this->db->prepare(
+            'SELECT * FROM projects WHERE owner_id = :owner_id ORDER BY created_at DESC, id DESC',
+        );
         $stmt->execute(['owner_id' => $ownerId]);
         $rows = $stmt->fetchAll();
         return array_map(static fn (array $row): Project => Project::fromArray($row), $rows);
@@ -33,8 +35,58 @@ class ProjectRepository
     /** @return list<Project> */
     public function findAll(): array
     {
-        $stmt = $this->db->query('SELECT * FROM projects ORDER BY id');
+        $stmt = $this->db->query(
+            'SELECT * FROM projects ORDER BY created_at DESC, id DESC',
+        );
         $rows = $stmt->fetchAll();
         return array_map(static fn (array $row): Project => Project::fromArray($row), $rows);
+    }
+
+    public function create(string $name, ?string $description, string $status, int $ownerId): Project
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO projects (name, description, status, owner_id)
+             VALUES (:name, :description, :status, :owner_id)
+             RETURNING *',
+        );
+        $stmt->execute([
+            'name' => $name,
+            'description' => $description,
+            'status' => $status,
+            'owner_id' => $ownerId,
+        ]);
+        $row = $stmt->fetch();
+        if ($row === false) {
+            throw new \RuntimeException('Nie udało się utworzyć projektu.');
+        }
+
+        return Project::fromArray($row);
+    }
+
+    public function update(int $id, string $name, ?string $description, string $status): ?Project
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE projects
+             SET name = :name, description = :description, status = :status, updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+             RETURNING *',
+        );
+        $stmt->execute([
+            'id' => $id,
+            'name' => $name,
+            'description' => $description,
+            'status' => $status,
+        ]);
+        $row = $stmt->fetch();
+
+        return $row ? Project::fromArray($row) : null;
+    }
+
+    public function delete(int $id): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM projects WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+
+        return $stmt->rowCount() > 0;
     }
 }

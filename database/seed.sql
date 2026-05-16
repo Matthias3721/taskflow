@@ -29,9 +29,9 @@ INSERT INTO categories (name, color) VALUES
     ('Funkcja', '#22c55e'),
     ('Dokumentacja', '#8b5cf6');
 
-INSERT INTO projects (name, description, owner_id) VALUES
-    ('TaskFlow MVP', 'Główny projekt aplikacji', 1),
-    ('Demo', 'Projekt demonstracyjny', 2);
+INSERT INTO projects (name, description, status, owner_id) VALUES
+    ('TaskFlow MVP', 'Główny projekt aplikacji', 'active', 1),
+    ('Demo', 'Projekt demonstracyjny', 'active', 2);
 
 INSERT INTO project_members (project_id, user_id) VALUES
     (1, 1),

@@ -6,6 +6,9 @@ namespace App\Core;
 
 class Request
 {
+    /** @var array<string, string> */
+    private array $routeParams = [];
+
     public function __construct(
         private readonly string $method,
         private readonly string $uri,
@@ -29,6 +32,17 @@ class Request
             $_SERVER,
             $_COOKIE,
         );
+    }
+
+    /** @param array<string, string> $params */
+    public function setRouteParams(array $params): void
+    {
+        $this->routeParams = $params;
+    }
+
+    public function route(string $key, mixed $default = null): mixed
+    {
+        return $this->routeParams[$key] ?? $default;
     }
 
     public function method(): string

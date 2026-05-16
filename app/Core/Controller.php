@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Repositories\ProjectRepository;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
+use App\Services\ProjectService;
 use PDO;
 
 abstract class Controller
@@ -39,6 +41,20 @@ abstract class Controller
             new UserRepository($this->db()),
             $this->session(),
         );
+    }
+
+    protected function projectService(): ProjectService
+    {
+        return new ProjectService(new ProjectRepository($this->db()));
+    }
+
+    protected function requireAuthJson(): ?Response
+    {
+        if (!$this->authService()->isAuthenticated()) {
+            return $this->json(['message' => 'Wymagane logowanie.'], 401);
+        }
+
+        return null;
     }
 
     /** @return array{id: int, name: string, email: string, role: string}|null */

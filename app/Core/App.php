@@ -74,6 +74,12 @@ class App
         $this->router->post('/api/login', \App\Controllers\AuthController::class . '@login');
         $this->router->post('/api/logout', \App\Controllers\AuthController::class . '@logout');
         $this->router->get('/api/me', \App\Controllers\AuthController::class . '@me');
+
+        $this->router->get('/api/projects', \App\Controllers\ProjectController::class . '@apiIndex');
+        $this->router->post('/api/projects', \App\Controllers\ProjectController::class . '@apiStore');
+        $this->router->get('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiShow');
+        $this->router->put('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiUpdate');
+        $this->router->delete('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiDestroy');
     }
 
     private function errorPage(int $code): string
