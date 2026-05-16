@@ -1,0 +1,12 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Core\App;
+
+$root = dirname(__DIR__);
+
+require $root . '/vendor/autoload.php';
+
+$app = new App();
+$app->run();

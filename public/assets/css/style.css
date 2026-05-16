@@ -1,0 +1,210 @@
+/* TaskFlow – własny styl bez frameworków UI */
+
+:root {
+    --color-bg: #0f1419;
+    --color-surface: #1a2332;
+    --color-border: #2d3a4f;
+    --color-text: #e8edf4;
+    --color-muted: #8b9cb3;
+    --color-accent: #3b82f6;
+    --color-accent-hover: #2563eb;
+    --sidebar-width: 220px;
+    --radius: 8px;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-sans);
+    background: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+a {
+    color: var(--color-accent);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    padding: 1.25rem 0;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    padding: 0 1.25rem 1rem;
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.sidebar-brand a {
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar-nav a {
+    display: block;
+    padding: 0.5rem 1.25rem;
+    color: var(--color-muted);
+    text-decoration: none;
+}
+
+.sidebar-nav a:hover {
+    color: var(--color-text);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.nav-divider {
+    height: 1px;
+    margin: 0.75rem 1.25rem;
+    background: var(--color-border);
+}
+
+.main-content {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    overflow-x: auto;
+}
+
+.page-header h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.text-muted {
+    color: var(--color-muted);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 360px;
+}
+
+.form label {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.form input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: var(--radius);
+    font: inherit;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.auth-card {
+    max-width: 420px;
+}
+
+.auth-card h2 {
+    margin-top: 0;
+}
+
+.form-footer {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem;
+}
+
+.stat-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    font-weight: 500;
+}
+
+.stat-value {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.data-list,
+.detail-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+}
+
+.section-toolbar {
+    margin-bottom: 1rem;
+}
+
+.error-page {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.error-page h1 {
+    font-size: 4rem;
+    margin: 0;
+    color: var(--color-muted);
+}
