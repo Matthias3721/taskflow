@@ -39,5 +39,18 @@ const TaskFlow = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.info('TaskFlow – aplikacja załadowana');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+
+            try {
+                await TaskFlow.fetchJson('/api/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (err) {
+                console.error('Wylogowanie nie powiodło się:', err.message);
+            }
+        });
+    }
 });

@@ -36,6 +36,10 @@ class Router
         $route = $this->routes[$method][$uri] ?? null;
 
         if ($route === null) {
+            if (str_starts_with($uri, '/api')) {
+                return Response::json(['message' => 'Nie znaleziono endpointu.'], 404);
+            }
+
             return Response::html(
                 $this->renderErrorView(404),
                 404,

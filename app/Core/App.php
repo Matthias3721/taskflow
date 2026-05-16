@@ -70,6 +70,10 @@ class App
         $this->router->get('/projects/show', \App\Controllers\ProjectController::class . '@show');
         $this->router->get('/tasks', \App\Controllers\TaskController::class . '@index');
         $this->router->get('/users', \App\Controllers\UserController::class . '@index');
+
+        $this->router->post('/api/login', \App\Controllers\AuthController::class . '@login');
+        $this->router->post('/api/logout', \App\Controllers\AuthController::class . '@logout');
+        $this->router->get('/api/me', \App\Controllers\AuthController::class . '@me');
     }
 
     private function errorPage(int $code): string

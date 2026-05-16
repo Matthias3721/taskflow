@@ -1,7 +1,7 @@
 <?php /** @var string $title */ ?>
 <section class="auth-card">
     <h2>Logowanie</h2>
-    <p class="text-muted">Formularz logowania – logika zostanie dodana w kolejnych etapach.</p>
+    <div id="login-error" class="form-error" hidden></div>
     <form id="login-form" class="form" action="#" method="post" novalidate>
         <label for="email">E-mail</label>
         <input type="email" id="email" name="email" required autocomplete="email">

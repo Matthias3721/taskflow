@@ -159,6 +159,21 @@ a:hover {
     color: var(--color-muted);
 }
 
+.form-error {
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: var(--radius);
+    background: rgba(239, 68, 68, 0.15);
+    color: #fca5a5;
+    font-size: 0.875rem;
+}
+
+.nav-user {
+    padding: 0.5rem 1.25rem;
+    font-size: 0.8125rem;
+    list-style: none;
+}
+
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));

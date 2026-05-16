@@ -9,13 +9,19 @@ use PDO;
 
 class UserRepository
 {
+    private const USER_SELECT = '
+        SELECT u.*, r.name AS role_name
+        FROM users u
+        INNER JOIN roles r ON r.id = u.role_id
+    ';
+
     public function __construct(private readonly PDO $db)
     {
     }
 
     public function findById(int $id): ?User
     {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');
+        $stmt = $this->db->prepare(self::USER_SELECT . ' WHERE u.id = :id LIMIT 1');
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
         return $row ? User::fromArray($row) : null;
@@ -23,7 +29,9 @@ class UserRepository
 
     public function findByEmail(string $email): ?User
     {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');
+        $stmt = $this->db->prepare(
+            self::USER_SELECT . ' WHERE u.email = :email AND u.is_active = TRUE LIMIT 1',
+        );
         $stmt->execute(['email' => $email]);
         $row = $stmt->fetch();
         return $row ? User::fromArray($row) : null;
@@ -32,7 +40,7 @@ class UserRepository
     /** @return list<User> */
     public function findAll(): array
     {
-        $stmt = $this->db->query('SELECT * FROM users ORDER BY id');
+        $stmt = $this->db->query(self::USER_SELECT . ' ORDER BY u.id');
         $rows = $stmt->fetchAll();
         return array_map(static fn (array $row): User => User::fromArray($row), $rows);
     }

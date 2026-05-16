@@ -28,7 +28,7 @@ class User
             isset($row['id']) ? (int) $row['id'] : null,
             (string) ($row['email'] ?? ''),
             (string) ($row['name'] ?? ''),
-            (string) ($row['role'] ?? 'user'),
+            (string) ($row['role_name'] ?? $row['role'] ?? 'user'),
             $row['password_hash'] ?? $row['password'] ?? null,
             $row['created_at'] ?? null,
         );
