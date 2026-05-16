@@ -10,7 +10,7 @@ $isAdmin = $user !== null && ($user['role'] ?? '') === 'admin';
     </div>
     <nav class="sidebar-nav">
         <ul>
-            <li><a href="/">Panel</a></li>
+            <li><a href="/dashboard">Panel</a></li>
             <li><a href="/projects">Projekty</a></li>
             <li><a href="/tasks">Zadania</a></li>
             <?php if ($isAdmin): ?>

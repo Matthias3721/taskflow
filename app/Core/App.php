@@ -64,6 +64,7 @@ class App
     private function registerRoutes(): void
     {
         $this->router->get('/', \App\Controllers\DashboardController::class . '@index');
+        $this->router->get('/dashboard', \App\Controllers\DashboardController::class . '@index');
         $this->router->get('/login', \App\Controllers\AuthController::class . '@showLogin');
         $this->router->get('/register', \App\Controllers\AuthController::class . '@showRegister');
         $this->router->get('/projects', \App\Controllers\ProjectController::class . '@index');
@@ -74,6 +75,7 @@ class App
         $this->router->post('/api/login', \App\Controllers\AuthController::class . '@login');
         $this->router->post('/api/logout', \App\Controllers\AuthController::class . '@logout');
         $this->router->get('/api/me', \App\Controllers\AuthController::class . '@me');
+        $this->router->get('/api/dashboard', \App\Controllers\DashboardController::class . '@apiDashboard');
 
         $this->router->get('/api/projects', \App\Controllers\ProjectController::class . '@apiIndex');
         $this->router->post('/api/projects', \App\Controllers\ProjectController::class . '@apiStore');
