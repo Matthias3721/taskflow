@@ -25,4 +25,17 @@ class UserController extends Controller
             ]));
         });
     }
+
+    public function apiOptions(Request $request): Response
+    {
+        if ($response = $this->requireAuthJson()) {
+            return $response;
+        }
+
+        $repository = new \App\Repositories\UserRepository($this->db());
+
+        return $this->json([
+            'users' => $repository->findOptions(),
+        ]);
+    }
 }

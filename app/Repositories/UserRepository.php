@@ -44,4 +44,18 @@ class UserRepository
         $rows = $stmt->fetchAll();
         return array_map(static fn (array $row): User => User::fromArray($row), $rows);
     }
+
+    /** @return list<array{id: int, name: string}> */
+    public function findOptions(): array
+    {
+        $stmt = $this->db->query(
+            'SELECT id, name FROM users WHERE is_active = TRUE ORDER BY name',
+        );
+        $rows = $stmt->fetchAll();
+
+        return array_map(static fn (array $row): array => [
+            'id' => (int) $row['id'],
+            'name' => (string) $row['name'],
+        ], $rows);
+    }
 }

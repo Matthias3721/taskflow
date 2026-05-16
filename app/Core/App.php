@@ -80,6 +80,14 @@ class App
         $this->router->get('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiShow');
         $this->router->put('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiUpdate');
         $this->router->delete('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiDestroy');
+
+        $this->router->get('/api/users/options', \App\Controllers\UserController::class . '@apiOptions');
+
+        $this->router->get('/api/tasks', \App\Controllers\TaskController::class . '@apiIndex');
+        $this->router->post('/api/tasks', \App\Controllers\TaskController::class . '@apiStore');
+        $this->router->get('/api/tasks/{id}', \App\Controllers\TaskController::class . '@apiShow');
+        $this->router->put('/api/tasks/{id}', \App\Controllers\TaskController::class . '@apiUpdate');
+        $this->router->delete('/api/tasks/{id}', \App\Controllers\TaskController::class . '@apiDestroy');
     }
 
     private function errorPage(int $code): string

@@ -21,6 +21,40 @@ class ProjectRepository
         return $row ? Project::fromArray($row) : null;
     }
 
+    public function exists(int $id): bool
+    {
+        $stmt = $this->db->prepare('SELECT 1 FROM projects WHERE id = :id LIMIT 1');
+        $stmt->execute(['id' => $id]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function userHasAccess(int $projectId, int $userId, bool $isAdmin): bool
+    {
+        if ($isAdmin) {
+            return $this->exists($projectId);
+        }
+
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM projects p
+             WHERE p.id = :project_id
+               AND (
+                   p.owner_id = :user_id
+                   OR EXISTS (
+                       SELECT 1 FROM project_members pm
+                       WHERE pm.project_id = p.id AND pm.user_id = :user_id
+                   )
+               )
+             LIMIT 1',
+        );
+        $stmt->execute([
+            'project_id' => $projectId,
+            'user_id' => $userId,
+        ]);
+
+        return (bool) $stmt->fetchColumn();
+    }
+
     /** @return list<Project> */
     public function findByOwner(int $ownerId): array
     {

@@ -1,6 +1,7 @@
 -- TaskFlow – schemat bazy danych PostgreSQL
 
 CREATE TYPE task_status AS ENUM ('todo', 'in_progress', 'done');
+CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high');
 CREATE TYPE project_status AS ENUM ('active', 'on_hold', 'completed');
 
 -- Role systemowe
@@ -63,6 +64,7 @@ CREATE TABLE tasks (
     title VARCHAR(255) NOT NULL,
     description TEXT,
     status task_status NOT NULL DEFAULT 'todo',
+    priority task_priority NOT NULL DEFAULT 'medium',
     project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     assignee_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,

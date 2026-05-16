@@ -38,10 +38,10 @@ INSERT INTO project_members (project_id, user_id) VALUES
     (1, 2),
     (2, 2);
 
-INSERT INTO tasks (title, description, status, project_id, assignee_id, category_id) VALUES
-    ('Konfiguracja Docker', 'Uruchomienie środowiska', 'done', 1, 1, 3),
-    ('Router MVC', 'Podstawowy routing', 'in_progress', 1, 1, 2),
-    ('Formularz logowania', 'UI + sesje', 'todo', 1, 2, 2);
+INSERT INTO tasks (title, description, status, priority, project_id, assignee_id, category_id) VALUES
+    ('Konfiguracja Docker', 'Uruchomienie środowiska', 'done', 'high', 1, 1, 3),
+    ('Router MVC', 'Podstawowy routing', 'in_progress', 'medium', 1, 1, 2),
+    ('Formularz logowania', 'UI + sesje', 'todo', 'medium', 1, 2, 2);
 
 INSERT INTO task_status_history (task_id, old_status, new_status, changed_by, changed_at) VALUES
     (1, NULL, 'todo', 1, CURRENT_TIMESTAMP - INTERVAL '3 days'),

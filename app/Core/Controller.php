@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Core;
 
 use App\Repositories\ProjectRepository;
+use App\Repositories\TaskRepository;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\ProjectService;
+use App\Services\TaskService;
 use PDO;
 
 abstract class Controller
@@ -46,6 +48,15 @@ abstract class Controller
     protected function projectService(): ProjectService
     {
         return new ProjectService(new ProjectRepository($this->db()));
+    }
+
+    protected function taskService(): TaskService
+    {
+        return new TaskService(
+            new TaskRepository($this->db()),
+            new ProjectRepository($this->db()),
+            new UserRepository($this->db()),
+        );
     }
 
     protected function requireAuthJson(): ?Response
