@@ -84,6 +84,9 @@ class App
         $this->router->delete('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiDestroy');
 
         $this->router->get('/api/users/options', \App\Controllers\UserController::class . '@apiOptions');
+        $this->router->get('/api/users', \App\Controllers\UserController::class . '@apiIndex');
+        $this->router->put('/api/users/{id}/role', \App\Controllers\UserController::class . '@apiUpdateRole');
+        $this->router->put('/api/users/{id}/status', \App\Controllers\UserController::class . '@apiUpdateStatus');
 
         $this->router->get('/api/tasks', \App\Controllers\TaskController::class . '@apiIndex');
         $this->router->post('/api/tasks', \App\Controllers\TaskController::class . '@apiStore');

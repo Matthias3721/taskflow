@@ -33,4 +33,15 @@ class UserServiceTest extends TestCase
         $service = new UserService($repository);
         $this->assertNull($service->get(99));
     }
+
+    public function testChangeStatusBlocksSelfDeactivation(): void
+    {
+        $repository = $this->createMock(UserRepository::class);
+        $repository->expects($this->never())->method('updateStatus');
+
+        $service = new UserService($repository);
+        $result = $service->changeStatus(1, false, 1);
+
+        $this->assertSame('Nie możesz dezaktywować własnego konta.', $result['error']);
+    }
 }

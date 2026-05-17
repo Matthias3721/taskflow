@@ -16,9 +16,15 @@ const TaskFlow = {
         const contentType = response.headers.get('Content-Type') || '';
 
         if (!response.ok) {
-            const message = contentType.includes('json')
-                ? (await response.json()).message
-                : response.statusText;
+            let message = response.statusText;
+            try {
+                const errBody = await response.json();
+                if (errBody && typeof errBody.message === 'string') {
+                    message = errBody.message;
+                }
+            } catch {
+                // odpowiedź nie-JSON – zostaw statusText
+            }
             throw new Error(message || `HTTP ${response.status}`);
         }
 

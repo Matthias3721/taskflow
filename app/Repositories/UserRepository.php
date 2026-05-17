@@ -42,7 +42,49 @@ class UserRepository
     {
         $stmt = $this->db->query(self::USER_SELECT . ' ORDER BY u.id');
         $rows = $stmt->fetchAll();
+
         return array_map(static fn (array $row): User => User::fromArray($row), $rows);
+    }
+
+    public function findRoleIdByName(string $roleName): ?int
+    {
+        $stmt = $this->db->prepare('SELECT id FROM roles WHERE name = :name LIMIT 1');
+        $stmt->execute(['name' => $roleName]);
+        $id = $stmt->fetchColumn();
+
+        return $id !== false ? (int) $id : null;
+    }
+
+    public function updateRole(int $userId, int $roleId): ?User
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE users SET role_id = :role_id, updated_at = CURRENT_TIMESTAMP WHERE id = :id RETURNING id',
+        );
+        $stmt->execute(['id' => $userId, 'role_id' => $roleId]);
+        if ($stmt->fetchColumn() === false) {
+            return null;
+        }
+
+        return $this->findById($userId);
+    }
+
+    public function updateStatus(int $userId, bool $isActive): ?User
+    {
+        $stmt = $this->db->prepare(
+            'UPDATE users
+             SET is_active = :is_active, updated_at = CURRENT_TIMESTAMP
+             WHERE id = :id
+             RETURNING id',
+        );
+        $stmt->bindValue(':id', $userId, PDO::PARAM_INT);
+        $stmt->bindValue(':is_active', $isActive, PDO::PARAM_BOOL);
+        $stmt->execute();
+
+        if ($stmt->fetchColumn() === false) {
+            return null;
+        }
+
+        return $this->findById($userId);
     }
 
     /** @return list<array{id: int, name: string}> */
