@@ -47,34 +47,21 @@ class Router
         $match = $this->match($method, $uri);
 
         if ($match === null) {
-            if (str_starts_with($uri, '/api')) {
-                return Response::json(['message' => 'Nie znaleziono endpointu.'], 404);
-            }
-
-            return Response::html(
-                $this->renderErrorView(404),
-                404,
-            );
+            return ErrorHandler::forStatus(404, '', $uri);
         }
 
         $request->setRouteParams($match['params']);
 
         $controllerClass = $match['controller'];
         if (!class_exists($controllerClass)) {
-            return Response::html(
-                $this->renderErrorView(500, 'Brak kontrolera.'),
-                500,
-            );
+            return ErrorHandler::forStatus(500, '', $uri);
         }
 
         $controller = new $controllerClass();
         $action = $match['action'];
 
         if (!method_exists($controller, $action)) {
-            return Response::html(
-                $this->renderErrorView(500, 'Brak metody kontrolera.'),
-                500,
-            );
+            return ErrorHandler::forStatus(500, '', $uri);
         }
 
         $result = $controller->$action($request);
@@ -138,18 +125,7 @@ class Router
     private function normalize(string $path): string
     {
         $path = '/' . trim($path, '/');
-        return $path === '/' ? '/' : rtrim($path, '/');
-    }
 
-    private function renderErrorView(int $code, string $message = ''): string
-    {
-        $viewPath = dirname(__DIR__, 2) . "/views/errors/{$code}.php";
-        if (!is_readable($viewPath)) {
-            return "<h1>{$code}</h1><p>{$message}</p>";
-        }
-        ob_start();
-        $errorMessage = $message;
-        include $viewPath;
-        return (string) ob_get_clean();
+        return $path === '/' ? '/' : rtrim($path, '/');
     }
 }

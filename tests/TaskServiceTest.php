@@ -111,4 +111,41 @@ class TaskServiceTest extends TestCase
 
         $this->assertArrayHasKey('task', $result);
     }
+
+    public function testDeleteDeniesRegularUser(): void
+    {
+        $task = new Task(1, 'Zadanie', null, 'todo', 'medium', 1, 5);
+        $project = new Project(1, 'P', null, 2, 'active');
+
+        $tasks = $this->createMock(TaskRepository::class);
+        $tasks->method('findById')->with(1)->willReturn($task);
+        $tasks->expects($this->never())->method('delete');
+
+        $projects = $this->createMock(ProjectRepository::class);
+        $projects->method('findById')->with(1)->willReturn($project);
+
+        $service = $this->makeService($tasks, $projects);
+        $result = $service->delete(1, 5, 'user');
+
+        $this->assertFalse($result['success']);
+        $this->assertSame('Brak uprawnień do usunięcia zadania.', $result['error']);
+    }
+
+    public function testUpdateDeniesUserNotAssignedToTask(): void
+    {
+        $task = new Task(1, 'Zadanie', null, 'todo', 'medium', 1, 2);
+        $project = new Project(1, 'P', null, 3, 'active');
+
+        $tasks = $this->createMock(TaskRepository::class);
+        $tasks->method('findById')->with(1)->willReturn($task);
+        $tasks->expects($this->never())->method('update');
+
+        $projects = $this->createMock(ProjectRepository::class);
+        $projects->method('findById')->with(1)->willReturn($project);
+
+        $service = $this->makeService($tasks, $projects);
+        $result = $service->update(1, ['status' => 'done'], 5, 'user');
+
+        $this->assertSame('Brak uprawnień do edycji zadania.', $result['error']);
+    }
 }

@@ -22,25 +22,10 @@ class App
     {
         $this->session->start();
 
-        if ($this->config['app']['debug']) {
-            error_reporting(E_ALL);
-            ini_set('display_errors', '1');
-        } else {
-            error_reporting(0);
-            ini_set('display_errors', '0');
-        }
-
         try {
             Database::getConnection($this->config);
         } catch (\PDOException $e) {
-            if ($this->config['app']['debug']) {
-                Response::html(
-                    '<h1>Błąd bazy danych</h1><pre>' . htmlspecialchars($e->getMessage()) . '</pre>',
-                    500,
-                )->send();
-            } else {
-                Response::html($this->errorPage(500), 500)->send();
-            }
+            ErrorHandler::toResponse($e, Request::capture()->uri())->send();
             return;
         }
 
@@ -50,14 +35,7 @@ class App
             $response = $this->router->dispatch($request);
             $response->send();
         } catch (\Throwable $e) {
-            if ($this->config['app']['debug']) {
-                Response::html(
-                    '<h1>Błąd aplikacji</h1><pre>' . htmlspecialchars($e->getMessage()) . '</pre>',
-                    500,
-                )->send();
-            } else {
-                Response::html($this->errorPage(500), 500)->send();
-            }
+            ErrorHandler::toResponse($e, $request->uri())->send();
         }
     }
 
@@ -99,16 +77,5 @@ class App
         $this->router->get('/api/tasks/{id}', \App\Controllers\TaskController::class . '@apiShow');
         $this->router->put('/api/tasks/{id}', \App\Controllers\TaskController::class . '@apiUpdate');
         $this->router->delete('/api/tasks/{id}', \App\Controllers\TaskController::class . '@apiDestroy');
-    }
-
-    private function errorPage(int $code): string
-    {
-        $path = dirname(__DIR__, 2) . "/views/errors/{$code}.php";
-        if (!is_readable($path)) {
-            return "<h1>{$code}</h1>";
-        }
-        ob_start();
-        include $path;
-        return (string) ob_get_clean();
     }
 }

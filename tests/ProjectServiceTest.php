@@ -87,4 +87,43 @@ class ProjectServiceTest extends TestCase
         $this->assertFalse($perms['can_edit']);
         $this->assertFalse($perms['can_delete']);
     }
+
+    public function testUpdateDeniesProjectManagerWhoIsNotOwner(): void
+    {
+        $project = new Project(1, 'Demo', null, 2, 'active');
+        $repository = $this->createMock(ProjectRepository::class);
+        $repository->method('findById')->with(1)->willReturn($project);
+        $repository->expects($this->never())->method('update');
+
+        $service = new ProjectService($repository);
+        $result = $service->update(1, ['name' => 'Zmiana'], 9, 'project_manager');
+
+        $this->assertSame('Brak uprawnień do edycji projektu.', $result['error']);
+    }
+
+    public function testDeleteDeniesRegularUser(): void
+    {
+        $project = new Project(1, 'Demo', null, 2, 'active');
+        $repository = $this->createMock(ProjectRepository::class);
+        $repository->method('findById')->with(1)->willReturn($project);
+        $repository->expects($this->never())->method('delete');
+
+        $service = new ProjectService($repository);
+        $result = $service->delete(1, 5, 'user');
+
+        $this->assertFalse($result['success']);
+        $this->assertSame('Brak uprawnień do usunięcia projektu.', $result['error']);
+    }
+
+    public function testUpdateRejectsInvalidStatus(): void
+    {
+        $project = new Project(1, 'Demo', null, 1, 'active');
+        $repository = $this->createMock(ProjectRepository::class);
+        $repository->method('findById')->with(1)->willReturn($project);
+
+        $service = new ProjectService($repository);
+        $result = $service->update(1, ['status' => 'invalid'], 1, 'admin');
+
+        $this->assertSame('Nieprawidłowy status projektu.', $result['error']);
+    }
 }

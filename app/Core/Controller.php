@@ -80,7 +80,7 @@ abstract class Controller
     {
         $viewFile = dirname(__DIR__, 2) . '/views/' . str_replace('.', '/', $name) . '.php';
         if (!is_readable($viewFile)) {
-            throw new \RuntimeException("Widok nie istnieje: {$name}");
+            throw HttpException::notFound('Widok nie istnieje.');
         }
 
         $data['currentUser'] = $data['currentUser'] ?? $this->currentUser();

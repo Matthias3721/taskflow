@@ -22,5 +22,8 @@
     "config": {
         "optimize-autoloader": true,
         "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }
