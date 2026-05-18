@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Task;
+use App\Repositories\CategoryRepository;
 use App\Repositories\ProjectRepository;
 use App\Repositories\TaskRepository;
 use App\Repositories\UserRepository;
@@ -15,6 +16,7 @@ class TaskService
         private readonly TaskRepository $tasks,
         private readonly ProjectRepository $projects,
         private readonly UserRepository $users,
+        private readonly CategoryRepository $categories,
     ) {
     }
 
@@ -63,6 +65,11 @@ class TaskService
             return ['error' => $assigneeError];
         }
 
+        $categoryError = $this->validateCategory($payload['category_id']);
+        if ($categoryError !== null) {
+            return ['error' => $categoryError];
+        }
+
         $task = $this->tasks->create(
             $payload['title'],
             $payload['description'],
@@ -71,6 +78,7 @@ class TaskService
             $payload['due_date'],
             $projectId,
             $payload['assignee_id'],
+            $payload['category_id'],
         );
 
         return ['task' => $task];
@@ -113,6 +121,11 @@ class TaskService
             return ['error' => $assigneeError];
         }
 
+        $categoryError = $this->validateCategory($payload['category_id']);
+        if ($categoryError !== null) {
+            return ['error' => $categoryError];
+        }
+
         $updated = $this->tasks->update(
             $id,
             $payload['title'],
@@ -122,6 +135,7 @@ class TaskService
             $payload['due_date'],
             $projectId,
             $payload['assignee_id'],
+            $payload['category_id'],
         );
 
         if ($updated === null) {
@@ -188,6 +202,11 @@ class TaskService
 
         $description = $this->normalizeDescription($data['description'] ?? null);
 
+        $categoryId = $this->normalizeCategoryId($data['category_id'] ?? null);
+        if ($categoryId === false) {
+            return ['error' => 'Nieprawidłowy identyfikator kategorii.'];
+        }
+
         return [
             'data' => [
                 'title' => $title,
@@ -197,8 +216,22 @@ class TaskService
                 'due_date' => $dueDate,
                 'project_id' => (int) $projectId,
                 'assignee_id' => $assigneeId,
+                'category_id' => $categoryId,
             ],
         ];
+    }
+
+    private function validateCategory(?int $categoryId): ?string
+    {
+        if ($categoryId === null) {
+            return null;
+        }
+
+        if (!$this->categories->exists($categoryId)) {
+            return 'Wybrana kategoria nie istnieje.';
+        }
+
+        return null;
     }
 
     private function validateAssignee(?int $assigneeId): ?string
@@ -265,5 +298,19 @@ class TaskService
         }
 
         return (int) $assigneeId;
+    }
+
+    /** @return int|null|false */
+    private function normalizeCategoryId(mixed $categoryId): int|null|false
+    {
+        if ($categoryId === null || $categoryId === '') {
+            return null;
+        }
+
+        if (!is_numeric($categoryId)) {
+            return false;
+        }
+
+        return (int) $categoryId;
     }
 }

@@ -13,6 +13,7 @@ $isAdmin = $user !== null && ($user['role'] ?? '') === 'admin';
             <li><a href="/dashboard">Panel</a></li>
             <li><a href="/projects">Projekty</a></li>
             <li><a href="/tasks">Zadania</a></li>
+            <li><a href="/categories">Kategorie</a></li>
             <?php if ($isAdmin): ?>
                 <li><a href="/users">Użytkownicy</a></li>
             <?php endif; ?>

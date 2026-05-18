@@ -32,6 +32,11 @@
                 <option value="done">Zakończone</option>
             </select>
 
+            <label for="task-category">Kategoria</label>
+            <select id="task-category" name="category_id">
+                <option value="">— brak —</option>
+            </select>
+
             <label for="task-priority">Priorytet</label>
             <select id="task-priority" name="priority">
                 <option value="low">Niski</option>

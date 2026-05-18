@@ -19,6 +19,8 @@ class Task
         public readonly ?int $assigneeId,
         public readonly ?string $dueDate = null,
         public readonly ?int $categoryId = null,
+        public readonly ?string $categoryName = null,
+        public readonly ?string $categoryColor = null,
         public readonly ?string $createdAt = null,
         public readonly ?string $updatedAt = null,
     ) {
@@ -36,6 +38,9 @@ class Task
             'due_date' => $this->dueDate,
             'project_id' => $this->projectId,
             'assignee_id' => $this->assigneeId,
+            'category_id' => $this->categoryId,
+            'category_name' => $this->categoryName,
+            'category_color' => $this->categoryColor,
             'created_at' => $this->createdAt,
             'updated_at' => $this->updatedAt,
         ];
@@ -54,6 +59,8 @@ class Task
             isset($row['assignee_id']) ? (int) $row['assignee_id'] : null,
             $row['due_date'] ?? null,
             isset($row['category_id']) ? (int) $row['category_id'] : null,
+            isset($row['category_name']) ? (string) $row['category_name'] : null,
+            $row['category_color'] ?? null,
             $row['created_at'] ?? null,
             $row['updated_at'] ?? null,
         );

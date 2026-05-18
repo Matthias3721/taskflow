@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Repositories\CategoryRepository;
 use App\Repositories\ProjectRepository;
 use App\Repositories\TaskRepository;
 use App\Repositories\UserRepository;
@@ -56,6 +57,7 @@ abstract class Controller
             new TaskRepository($this->db()),
             new ProjectRepository($this->db()),
             new UserRepository($this->db()),
+            new CategoryRepository($this->db()),
         );
     }
 

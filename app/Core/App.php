@@ -70,6 +70,7 @@ class App
         $this->router->get('/projects', \App\Controllers\ProjectController::class . '@index');
         $this->router->get('/projects/show', \App\Controllers\ProjectController::class . '@show');
         $this->router->get('/tasks', \App\Controllers\TaskController::class . '@index');
+        $this->router->get('/categories', \App\Controllers\CategoryController::class . '@index');
         $this->router->get('/users', \App\Controllers\UserController::class . '@index');
 
         $this->router->post('/api/login', \App\Controllers\AuthController::class . '@login');
@@ -82,6 +83,11 @@ class App
         $this->router->get('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiShow');
         $this->router->put('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiUpdate');
         $this->router->delete('/api/projects/{id}', \App\Controllers\ProjectController::class . '@apiDestroy');
+
+        $this->router->get('/api/categories', \App\Controllers\CategoryController::class . '@apiIndex');
+        $this->router->post('/api/categories', \App\Controllers\CategoryController::class . '@apiStore');
+        $this->router->put('/api/categories/{id}', \App\Controllers\CategoryController::class . '@apiUpdate');
+        $this->router->delete('/api/categories/{id}', \App\Controllers\CategoryController::class . '@apiDestroy');
 
         $this->router->get('/api/users/options', \App\Controllers\UserController::class . '@apiOptions');
         $this->router->get('/api/users', \App\Controllers\UserController::class . '@apiIndex');

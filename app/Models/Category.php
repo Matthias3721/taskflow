@@ -10,7 +10,19 @@ class Category
         public readonly ?int $id,
         public readonly string $name,
         public readonly ?string $color = null,
+        public readonly ?string $createdAt = null,
     ) {
+    }
+
+    /** @return array<string, mixed> */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'color' => $this->color,
+            'created_at' => $this->createdAt,
+        ];
     }
 
     /** @param array<string, mixed> $row */
@@ -20,6 +32,7 @@ class Category
             isset($row['id']) ? (int) $row['id'] : null,
             (string) ($row['name'] ?? ''),
             $row['color'] ?? null,
+            $row['created_at'] ?? null,
         );
     }
 }

@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const formError = document.getElementById('task-form-error');
     const projectSelect = document.getElementById('task-project');
     const assigneeSelect = document.getElementById('task-assignee');
+    const categorySelect = document.getElementById('task-category');
 
     if (!list) {
         return;
@@ -35,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formWrap.hidden = false;
             form?.reset();
             hideFormError(formError);
-            await loadFormOptions(projectSelect, assigneeSelect);
+            await loadFormOptions(projectSelect, assigneeSelect, categorySelect);
             document.getElementById('task-title')?.focus();
         });
     }
@@ -53,11 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
             hideFormError(formError);
 
             const assigneeValue = form.assignee_id.value;
+            const categoryValue = form.category_id.value;
             const payload = {
                 title: form.title.value.trim(),
                 description: form.description.value.trim() || null,
                 project_id: parseInt(form.project_id.value, 10),
                 assignee_id: assigneeValue === '' ? null : parseInt(assigneeValue, 10),
+                category_id: categoryValue === '' ? null : parseInt(categoryValue, 10),
                 status: form.status.value,
                 priority: form.priority.value,
                 due_date: form.due_date.value || null,
@@ -95,18 +98,24 @@ async function loadTasks(container) {
     }
 }
 
-async function loadFormOptions(projectSelect, assigneeSelect) {
-    if (!projectSelect || !assigneeSelect) {
-        return;
-    }
-
-    const [projectsData, usersData] = await Promise.all([
+async function loadFormOptions(projectSelect, assigneeSelect, categorySelect) {
+    const requests = [
         TaskFlow.fetchJson('/api/projects'),
         TaskFlow.fetchJson('/api/users/options'),
-    ]);
+        TaskFlow.fetchJson('/api/categories'),
+    ];
 
-    fillSelect(projectSelect, projectsData.projects || [], 'id', 'name', '— wybierz projekt —');
-    fillSelect(assigneeSelect, usersData.users || [], 'id', 'name', '— brak —', true);
+    const [projectsData, usersData, categoriesData] = await Promise.all(requests);
+
+    if (projectSelect) {
+        fillSelect(projectSelect, projectsData.projects || [], 'id', 'name', '— wybierz projekt —');
+    }
+    if (assigneeSelect) {
+        fillSelect(assigneeSelect, usersData.users || [], 'id', 'name', '— brak —', true);
+    }
+    if (categorySelect) {
+        fillSelect(categorySelect, categoriesData.categories || [], 'id', 'name', '— brak —', true);
+    }
 }
 
 function fillSelect(select, items, valueKey, labelKey, placeholder, allowEmpty = false) {
@@ -149,6 +158,9 @@ function renderTasks(container, tasks) {
         const dueDate = task.due_date
             ? `<p class="project-desc">Termin: ${escapeHtml(task.due_date)}</p>`
             : '';
+        const categoryLine = task.category_name
+            ? `<p class="project-desc">Kategoria: <span class="category-swatch" style="background:${escapeHtml(task.category_color || '#3b82f6')}"></span> ${escapeHtml(task.category_name)}</p>`
+            : '';
 
         li.innerHTML = `
             <div class="project-item-header">
@@ -156,9 +168,11 @@ function renderTasks(container, tasks) {
                 <span class="project-badge">${escapeHtml(statusLabel)}</span>
             </div>
             <p class="project-desc">Projekt #${task.project_id} · ${escapeHtml(priorityLabel)}</p>
+            ${categoryLine}
             ${description}
             ${dueDate}
         `;
+
         ul.appendChild(li);
     });
 

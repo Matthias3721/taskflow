@@ -417,6 +417,16 @@ a:hover {
     cursor: not-allowed;
 }
 
+.category-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 0.35rem;
+    border: 1px solid var(--color-border);
+}
+
 .error-page {
     text-align: center;
     padding: 3rem 1rem;
