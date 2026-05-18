@@ -44,13 +44,67 @@ const TaskFlow = {
     },
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    const logoutBtn = document.getElementById('logout-btn');
+function closeMobileSidebar() {
+    document.body.classList.remove('sidebar-open');
+    const openBtn = document.getElementById('sidebar-open-btn');
+    if (openBtn) {
+        openBtn.setAttribute('aria-expanded', 'false');
+    }
+}
 
+function openMobileSidebar() {
+    document.body.classList.add('sidebar-open');
+    const openBtn = document.getElementById('sidebar-open-btn');
+    if (openBtn) {
+        openBtn.setAttribute('aria-expanded', 'true');
+    }
+}
+
+function initMobileSidebar() {
+    const openBtn = document.getElementById('sidebar-open-btn');
+    const closeBtn = document.getElementById('sidebar-close-btn');
+    const backdrop = document.getElementById('mobile-backdrop');
+    const sidebar = document.getElementById('app-sidebar');
+
+    if (!openBtn) {
+        return;
+    }
+
+    closeMobileSidebar();
+
+    openBtn.addEventListener('click', () => openMobileSidebar());
+    closeBtn?.addEventListener('click', () => closeMobileSidebar());
+    backdrop?.addEventListener('click', () => closeMobileSidebar());
+
+    sidebar?.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) {
+            return;
+        }
+        const href = link.getAttribute('href');
+        if (href && href !== '#') {
+            closeMobileSidebar();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeMobileSidebar();
+        }
+    });
+}
+
+closeMobileSidebar();
+
+document.addEventListener('DOMContentLoaded', () => {
+    closeMobileSidebar();
+    initMobileSidebar();
+
+    const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
-
+            closeMobileSidebar();
             try {
                 await TaskFlow.fetchJson('/api/logout', { method: 'POST' });
                 window.location.href = '/login';
@@ -60,3 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+window.addEventListener('pageshow', () => closeMobileSidebar());
+window.addEventListener('beforeunload', () => closeMobileSidebar());
