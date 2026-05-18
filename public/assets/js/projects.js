@@ -12,6 +12,7 @@ const PROJECT_STATUS_LABELS = {
 let projectsCache = [];
 
 document.addEventListener('DOMContentLoaded', () => {
+    const page = document.getElementById('projects-page');
     const list = document.getElementById('projects-list');
     const formWrap = document.getElementById('project-form-wrap');
     const form = document.getElementById('project-form');
@@ -22,6 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!list) {
         return;
     }
+
+    const currentUserId = page ? Number(page.dataset.userId) : 0;
+    const userRole = page?.dataset.userRole ?? '';
 
     list.addEventListener('click', async (e) => {
         const editBtn = e.target.closest('.btn-edit-project');
@@ -46,14 +50,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             try {
                 await TaskFlow.fetchJson(`/api/projects/${projectId}`, { method: 'DELETE' });
-                await loadProjects(list);
+                await loadProjects(list, currentUserId, userRole);
             } catch (err) {
                 TaskFlow.showMessage(list, err.message || 'Nie udało się usunąć projektu.', 'error');
             }
         }
     });
 
-    loadProjects(list);
+    loadProjects(list, currentUserId, userRole);
 
     if (btnNew && formWrap) {
         btnNew.addEventListener('click', () => openProjectForm(formWrap, form, formError, null));
@@ -94,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
                 formWrap.hidden = true;
-                await loadProjects(list);
+                await loadProjects(list, currentUserId, userRole);
             } catch (err) {
                 TaskFlow.showMessage(list, err.message || 'Nie udało się zapisać projektu.', 'error');
             } finally {
@@ -134,13 +138,13 @@ function openProjectForm(formWrap, form, formError, project) {
     nameInput?.focus();
 }
 
-async function loadProjects(container) {
-    container.innerHTML = '<p class="text-muted">Ładowanie projektów…</p>';
+async function loadProjects(container, currentUserId, userRole) {
+    container.innerHTML = '<p class="loading-placeholder text-muted">Ładowanie projektów…</p>';
 
     try {
         const data = await TaskFlow.fetchJson('/api/projects');
         projectsCache = data.projects || [];
-        renderProjects(container, projectsCache);
+        renderProjects(container, projectsCache, currentUserId, userRole);
     } catch (err) {
         container.innerHTML = '';
         projectsCache = [];
@@ -148,23 +152,62 @@ async function loadProjects(container) {
     }
 }
 
-function renderProjects(container, projects) {
+function renderOwnerMeta(project, currentUserId, userRole) {
+    if (project.owner_name) {
+        return `<p class="project-card-owner">Właściciel: ${escapeHtml(project.owner_name)}</p>`;
+    }
+
+    const ownerId = Number(project.owner_id);
+    if (!ownerId) {
+        return '';
+    }
+
+    if (currentUserId && ownerId === currentUserId) {
+        return '<p class="project-card-owner">Twój projekt</p>';
+    }
+
+    if (userRole === 'admin') {
+        return `<p class="project-card-owner">Właściciel #${ownerId}</p>`;
+    }
+
+    return '';
+}
+
+function renderProjects(container, projects, currentUserId, userRole) {
     if (!projects.length) {
-        container.innerHTML = '<p class="text-muted">Brak projektów. Utwórz pierwszy projekt.</p>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon empty-state-icon--folder" aria-hidden="true"></div>
+                <h3 class="empty-state-title">Brak projektów</h3>
+                <p class="empty-state-text">Utwórz pierwszy projekt, aby zacząć organizować zadania.</p>
+                <button type="button" class="btn btn-primary btn-empty-cta" data-action="new-project">Nowy projekt</button>
+            </div>
+        `;
+
+        const cta = container.querySelector('[data-action="new-project"]');
+        const btnNew = document.getElementById('btn-new-project');
+        if (cta && btnNew) {
+            cta.addEventListener('click', () => btnNew.click());
+        }
         return;
     }
 
     const ul = document.createElement('ul');
-    ul.className = 'project-items';
+    ul.className = 'project-cards-list';
 
     projects.forEach((project) => {
         const li = document.createElement('li');
-        li.className = 'project-item';
+        li.className = 'project-card';
 
-        const statusLabel = PROJECT_STATUS_LABELS[project.status] || project.status;
+        const status = String(project.status ?? 'active');
+        const statusLabel = PROJECT_STATUS_LABELS[status] || status;
+        const statusClass = ['active', 'on_hold', 'completed'].includes(status) ? status : 'active';
+
         const description = project.description
-            ? `<p class="project-desc">${escapeHtml(project.description)}</p>`
-            : '';
+            ? `<p class="project-card-desc">${escapeHtml(project.description)}</p>`
+            : '<p class="project-card-desc project-card-desc--empty">Brak opisu</p>';
+
+        const ownerHtml = renderOwnerMeta(project, currentUserId, userRole);
 
         const actions = [];
         if (project.can_edit === true) {
@@ -174,20 +217,23 @@ function renderProjects(container, projects) {
         }
         if (project.can_delete === true) {
             actions.push(
-                `<button type="button" class="btn btn-sm btn-delete-project" data-project-id="${project.id}">Usuń</button>`,
+                `<button type="button" class="btn btn-sm btn-danger btn-delete-project" data-project-id="${project.id}">Usuń</button>`,
             );
         }
 
         const actionsHtml = actions.length
-            ? `<div class="project-item-actions">${actions.join(' ')}</div>`
+            ? `<footer class="project-card-footer">${actions.join('')}</footer>`
             : '';
 
         li.innerHTML = `
-            <div class="project-item-header">
-                <strong>${escapeHtml(project.name)}</strong>
-                <span class="project-badge">${escapeHtml(statusLabel)}</span>
+            <div class="project-card-body">
+                <header class="project-card-header">
+                    <h3 class="project-card-title">${escapeHtml(project.name)}</h3>
+                    <span class="status-badge status-badge--${statusClass}">${escapeHtml(statusLabel)}</span>
+                </header>
+                ${description}
+                ${ownerHtml}
             </div>
-            ${description}
             ${actionsHtml}
         `;
 

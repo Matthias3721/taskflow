@@ -1,12 +1,25 @@
-<?php /** @var string $title */ ?>
-<section>
-    <div class="section-toolbar">
+<?php
+/** @var string $title */
+/** @var array{id: int, name: string, email: string, role: string}|null $currentUser */
+$user = $currentUser ?? null;
+?>
+<section
+    class="projects-page page-view"
+    id="projects-page"
+    data-user-id="<?= $user !== null ? (int) $user['id'] : 0 ?>"
+    data-user-role="<?= htmlspecialchars($user['role'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+>
+    <header class="page-intro page-intro--toolbar">
+        <div class="page-intro-text">
+            <h1 class="page-intro-title">Projekty</h1>
+            <p class="page-intro-desc">Zarządzanie projektami</p>
+        </div>
         <button type="button" class="btn btn-primary" id="btn-new-project">Nowy projekt</button>
-    </div>
+    </header>
 
-    <div id="project-form-wrap" class="project-form-wrap" hidden>
-        <form id="project-form" class="form">
-            <h3 id="project-form-title">Nowy projekt</h3>
+    <div id="project-form-wrap" class="project-form-wrap card-panel" hidden>
+        <form id="project-form" class="form form-card">
+            <h2 class="form-card-title" id="project-form-title">Nowy projekt</h2>
             <input type="hidden" id="project-id" value="">
             <div id="project-form-error" class="form-error" hidden></div>
             <label for="project-name">Nazwa</label>
@@ -29,8 +42,8 @@
         </form>
     </div>
 
-    <div id="projects-list" class="data-list">
-        <p class="text-muted">Ładowanie projektów…</p>
+    <div id="projects-list" class="project-cards">
+        <p class="loading-placeholder text-muted">Ładowanie projektów…</p>
     </div>
 </section>
 <script src="/assets/js/projects.js" defer></script>
