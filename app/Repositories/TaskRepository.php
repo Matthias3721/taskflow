@@ -40,6 +40,35 @@ class TaskRepository
     }
 
     /** @return list<Task> */
+    public function findByProjectOwner(int $ownerId): array
+    {
+        $stmt = $this->db->prepare(
+            self::TASK_SELECT . '
+             INNER JOIN projects p ON p.id = t.project_id
+             WHERE p.owner_id = :owner_id
+             ORDER BY t.created_at DESC, t.id DESC',
+        );
+        $stmt->execute(['owner_id' => $ownerId]);
+        $rows = $stmt->fetchAll();
+
+        return array_map(static fn (array $row): Task => Task::fromArray($row), $rows);
+    }
+
+    /** @return list<Task> */
+    public function findAssignedToUser(int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            self::TASK_SELECT . '
+             WHERE t.assignee_id = :user_id
+             ORDER BY t.created_at DESC, t.id DESC',
+        );
+        $stmt->execute(['user_id' => $userId]);
+        $rows = $stmt->fetchAll();
+
+        return array_map(static fn (array $row): Task => Task::fromArray($row), $rows);
+    }
+
+    /** @return list<Task> */
     public function findAccessibleByUser(int $userId): array
     {
         $stmt = $this->db->prepare(

@@ -56,6 +56,22 @@ class ProjectRepository
     }
 
     /** @return list<Project> */
+    public function findAccessibleForUser(int $userId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT DISTINCT p.*
+             FROM projects p
+             LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = :user_id
+             WHERE p.owner_id = :user_id OR pm.user_id IS NOT NULL
+             ORDER BY p.created_at DESC, p.id DESC',
+        );
+        $stmt->execute(['user_id' => $userId]);
+        $rows = $stmt->fetchAll();
+
+        return array_map(static fn (array $row): Project => Project::fromArray($row), $rows);
+    }
+
+    /** @return list<Project> */
     public function findByOwner(int $ownerId): array
     {
         $stmt = $this->db->prepare(

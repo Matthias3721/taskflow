@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\Authorization;
 use App\Models\Project;
 use App\Repositories\ProjectRepository;
 
@@ -14,11 +15,17 @@ class ProjectService
     }
 
     /** @return list<Project> */
-    public function listForUser(int $userId, bool $isAdmin = false): array
+    public function listForUser(int $userId, string $role): array
     {
-        return $isAdmin
-            ? $this->projects->findAll()
-            : $this->projects->findByOwner($userId);
+        if (Authorization::isAdmin($role)) {
+            return $this->projects->findAll();
+        }
+
+        if (Authorization::isProjectManager($role)) {
+            return $this->projects->findByOwner($userId);
+        }
+
+        return $this->projects->findAccessibleForUser($userId);
     }
 
     public function get(int $id): ?Project
@@ -26,9 +33,31 @@ class ProjectService
         return $this->projects->findById($id);
     }
 
-    public function canManage(Project $project, int $userId, bool $isAdmin): bool
+    public function canManage(Project $project, int $userId, string $role): bool
     {
-        return $isAdmin || $project->ownerId === $userId;
+        return Authorization::canManageProject($role, $userId, $project->ownerId);
+    }
+
+    public function canView(Project $project, int $userId, string $role): bool
+    {
+        if (Authorization::isAdmin($role)) {
+            return true;
+        }
+
+        return $this->projects->userHasAccess($project->id, $userId, false);
+    }
+
+    /**
+     * @return array{can_edit: bool, can_delete: bool}
+     */
+    public function projectPermissions(Project $project, int $userId, string $role): array
+    {
+        $canManage = $this->canManage($project, $userId, $role);
+
+        return [
+            'can_edit' => $canManage,
+            'can_delete' => $canManage,
+        ];
     }
 
     /**
@@ -58,14 +87,14 @@ class ProjectService
      * @param array{name?: string, description?: string|null, status?: string} $data
      * @return array{project?: Project, error?: string}
      */
-    public function update(int $id, array $data, int $userId, bool $isAdmin): array
+    public function update(int $id, array $data, int $userId, string $role): array
     {
         $project = $this->projects->findById($id);
         if ($project === null) {
             return ['error' => 'Projekt nie istnieje.'];
         }
 
-        if (!$this->canManage($project, $userId, $isAdmin)) {
+        if (!$this->canManage($project, $userId, $role)) {
             return ['error' => 'Brak uprawnień do edycji projektu.'];
         }
 
@@ -92,14 +121,14 @@ class ProjectService
     }
 
     /** @return array{success: bool, error?: string} */
-    public function delete(int $id, int $userId, bool $isAdmin): array
+    public function delete(int $id, int $userId, string $role): array
     {
         $project = $this->projects->findById($id);
         if ($project === null) {
             return ['success' => false, 'error' => 'Projekt nie istnieje.'];
         }
 
-        if (!$this->canManage($project, $userId, $isAdmin)) {
+        if (!$this->canManage($project, $userId, $role)) {
             return ['success' => false, 'error' => 'Brak uprawnień do usunięcia projektu.'];
         }
 

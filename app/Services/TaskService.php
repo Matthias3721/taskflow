@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Core\Authorization;
+use App\Models\Project;
 use App\Models\Task;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ProjectRepository;
@@ -21,11 +23,17 @@ class TaskService
     }
 
     /** @return list<Task> */
-    public function listForUser(int $userId, bool $isAdmin): array
+    public function listForUser(int $userId, string $role): array
     {
-        return $isAdmin
-            ? $this->tasks->findAll()
-            : $this->tasks->findAccessibleByUser($userId);
+        if (Authorization::isAdmin($role)) {
+            return $this->tasks->findAll();
+        }
+
+        if (Authorization::isProjectManager($role)) {
+            return $this->tasks->findByProjectOwner($userId);
+        }
+
+        return $this->tasks->findAssignedToUser($userId);
     }
 
     public function get(int $id): ?Task
@@ -33,16 +41,48 @@ class TaskService
         return $this->tasks->findById($id);
     }
 
-    public function canAccess(Task $task, int $userId, bool $isAdmin): bool
+    public function canAccess(Task $task, int $userId, string $role): bool
     {
-        return $this->projects->userHasAccess($task->projectId, $userId, $isAdmin);
+        if (Authorization::isAdmin($role)) {
+            return true;
+        }
+
+        if (Authorization::isUser($role)) {
+            return $task->assigneeId === $userId;
+        }
+
+        $project = $this->projects->findById($task->projectId);
+
+        return $project !== null
+            && Authorization::canManageTasksInProject($role, $userId, $project->ownerId);
+    }
+
+    /**
+     * @return array{can_edit: bool, can_edit_limited: bool, can_delete: bool}
+     */
+    public function taskPermissions(Task $task, int $userId, string $role): array
+    {
+        $project = $this->projects->findById($task->projectId);
+        $ownerId = $project?->ownerId ?? 0;
+
+        $fullManage = $project !== null
+            && Authorization::canManageTasksInProject($role, $userId, $ownerId);
+        $limitedEdit = Authorization::canEditAssignedTask($role, $userId, $task->assigneeId);
+        $canDelete = $project !== null
+            && Authorization::canDeleteTask($role, $userId, $ownerId);
+
+        return [
+            'can_edit' => $fullManage || $limitedEdit,
+            'can_edit_limited' => $limitedEdit && !$fullManage,
+            'can_delete' => $canDelete,
+        ];
     }
 
     /**
      * @param array<string, mixed> $data
      * @return array{task?: Task, error?: string}
      */
-    public function create(array $data, int $userId, bool $isAdmin): array
+    public function create(array $data, int $userId, string $role): array
     {
         $validated = $this->validatePayload($data);
         if (isset($validated['error'])) {
@@ -56,8 +96,8 @@ class TaskService
             return ['error' => 'Projekt nie istnieje.'];
         }
 
-        if (!$this->projects->userHasAccess($projectId, $userId, $isAdmin)) {
-            return ['error' => 'Brak dostępu do projektu.'];
+        if (!$this->canCreateTask($projectId, $userId, $role)) {
+            return ['error' => 'Brak uprawnień do tworzenia zadania w tym projekcie.'];
         }
 
         $assigneeError = $this->validateAssignee($payload['assignee_id']);
@@ -88,34 +128,119 @@ class TaskService
      * @param array<string, mixed> $data
      * @return array{task?: Task, error?: string}
      */
-    public function update(int $id, array $data, int $userId, bool $isAdmin): array
+    public function update(int $id, array $data, int $userId, string $role): array
     {
         $task = $this->tasks->findById($id);
         if ($task === null) {
             return ['error' => 'Zadanie nie istnieje.'];
         }
 
-        if (!$this->canAccess($task, $userId, $isAdmin)) {
-            return ['error' => 'Brak uprawnień do edycji zadania.'];
-        }
-
-        $merged = array_merge($task->toArray(), $data);
-        $validated = $this->validatePayload($merged);
-        if (isset($validated['error'])) {
-            return $validated;
-        }
-
-        $payload = $validated['data'];
-        $projectId = (int) $payload['project_id'];
-
-        if (!$this->projects->exists($projectId)) {
+        $project = $this->projects->findById($task->projectId);
+        if ($project === null) {
             return ['error' => 'Projekt nie istnieje.'];
         }
 
-        if (!$this->projects->userHasAccess($projectId, $userId, $isAdmin)) {
-            return ['error' => 'Brak dostępu do projektu.'];
+        if ($this->canFullEditTask($project, $userId, $role)) {
+            $merged = array_merge($task->toArray(), $data);
+            $validated = $this->validatePayload($merged);
+            if (isset($validated['error'])) {
+                return $validated;
+            }
+
+            $payload = $validated['data'];
+
+            if (!$this->projects->userHasAccess($payload['project_id'], $userId, Authorization::isAdmin($role))) {
+                return ['error' => 'Brak dostępu do projektu.'];
+            }
+
+            return $this->persistUpdate($id, $payload);
         }
 
+        if (Authorization::canEditAssignedTask($role, $userId, $task->assigneeId)) {
+            return $this->updateLimited($task, $data);
+        }
+
+        return ['error' => 'Brak uprawnień do edycji zadania.'];
+    }
+
+    /** @return array{success: bool, error?: string} */
+    public function delete(int $id, int $userId, string $role): array
+    {
+        $task = $this->tasks->findById($id);
+        if ($task === null) {
+            return ['success' => false, 'error' => 'Zadanie nie istnieje.'];
+        }
+
+        $project = $this->projects->findById($task->projectId);
+        if ($project === null) {
+            return ['success' => false, 'error' => 'Projekt nie istnieje.'];
+        }
+
+        if (!Authorization::canDeleteTask($role, $userId, $project->ownerId)) {
+            return ['success' => false, 'error' => 'Brak uprawnień do usunięcia zadania.'];
+        }
+
+        if (!$this->tasks->delete($id)) {
+            return ['success' => false, 'error' => 'Nie udało się usunąć zadania.'];
+        }
+
+        return ['success' => true];
+    }
+
+    private function canCreateTask(int $projectId, int $userId, string $role): bool
+    {
+        if (Authorization::isAdmin($role)) {
+            return true;
+        }
+
+        $project = $this->projects->findById($projectId);
+        if ($project === null) {
+            return false;
+        }
+
+        return Authorization::canManageTasksInProject($role, $userId, $project->ownerId);
+    }
+
+    private function canFullEditTask(Project $project, int $userId, string $role): bool
+    {
+        return Authorization::canManageTasksInProject($role, $userId, $project->ownerId);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return array{task?: Task, error?: string}
+     */
+    private function updateLimited(Task $task, array $data): array
+    {
+        $status = $this->normalizeStatus((string) ($data['status'] ?? $task->status));
+        if ($status === null) {
+            return ['error' => 'Nieprawidłowy status zadania.'];
+        }
+
+        $description = array_key_exists('description', $data)
+            ? $this->normalizeDescription($data['description'])
+            : $task->description;
+
+        $payload = [
+            'title' => $task->title,
+            'description' => $description,
+            'status' => $status,
+            'priority' => $task->priority,
+            'due_date' => $task->dueDate,
+            'project_id' => $task->projectId,
+            'assignee_id' => $task->assigneeId,
+            'category_id' => $task->categoryId,
+        ];
+
+        return $this->persistUpdate((int) $task->id, $payload);
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array{task?: Task, error?: string}
+     */
+    private function persistUpdate(int $id, array $payload): array
+    {
         $assigneeError = $this->validateAssignee($payload['assignee_id']);
         if ($assigneeError !== null) {
             return ['error' => $assigneeError];
@@ -133,7 +258,7 @@ class TaskService
             $payload['status'],
             $payload['priority'],
             $payload['due_date'],
-            $projectId,
+            (int) $payload['project_id'],
             $payload['assignee_id'],
             $payload['category_id'],
         );
@@ -143,25 +268,6 @@ class TaskService
         }
 
         return ['task' => $updated];
-    }
-
-    /** @return array{success: bool, error?: string} */
-    public function delete(int $id, int $userId, bool $isAdmin): array
-    {
-        $task = $this->tasks->findById($id);
-        if ($task === null) {
-            return ['success' => false, 'error' => 'Zadanie nie istnieje.'];
-        }
-
-        if (!$this->canAccess($task, $userId, $isAdmin)) {
-            return ['success' => false, 'error' => 'Brak uprawnień do usunięcia zadania.'];
-        }
-
-        if (!$this->tasks->delete($id)) {
-            return ['success' => false, 'error' => 'Nie udało się usunąć zadania.'];
-        }
-
-        return ['success' => true];
     }
 
     /**

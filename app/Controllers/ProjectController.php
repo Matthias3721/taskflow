@@ -37,13 +37,10 @@ class ProjectController extends Controller
         }
 
         $user = $this->currentUser();
-        $projects = $this->projectService()->listForUser(
-            $user['id'],
-            $user['role'] === 'admin',
-        );
+        $projects = $this->projectService()->listForUser($user['id'], $user['role']);
 
         return $this->json([
-            'projects' => $this->serializeProjects($projects),
+            'projects' => $this->serializeProjects($projects, $user),
         ]);
     }
 
@@ -63,7 +60,7 @@ class ProjectController extends Controller
 
         return $this->json([
             'message' => 'Projekt utworzony.',
-            'project' => $result['project']->toArray(),
+            'project' => $this->serializeProject($result['project'], $user),
         ], 201);
     }
 
@@ -84,11 +81,11 @@ class ProjectController extends Controller
         }
 
         $user = $this->currentUser();
-        if (!$this->canView($project, $user)) {
+        if (!$this->projectService()->canView($project, $user['id'], $user['role'])) {
             return $this->json(['message' => 'Brak dostępu do projektu.'], 403);
         }
 
-        return $this->json(['project' => $project->toArray()]);
+        return $this->json(['project' => $this->serializeProject($project, $user)]);
     }
 
     public function apiUpdate(Request $request): Response
@@ -107,7 +104,7 @@ class ProjectController extends Controller
             $id,
             $request->json(),
             $user['id'],
-            $user['role'] === 'admin',
+            $user['role'],
         );
 
         if (isset($result['error'])) {
@@ -118,7 +115,7 @@ class ProjectController extends Controller
 
         return $this->json([
             'message' => 'Projekt zaktualizowany.',
-            'project' => $result['project']->toArray(),
+            'project' => $this->serializeProject($result['project'], $user),
         ]);
     }
 
@@ -137,7 +134,7 @@ class ProjectController extends Controller
         $result = $this->projectService()->delete(
             $id,
             $user['id'],
-            $user['role'] === 'admin',
+            $user['role'],
         );
 
         if (!$result['success']) {
@@ -160,18 +157,22 @@ class ProjectController extends Controller
     }
 
     /** @param array{id: int, role: string} $user */
-    private function canView(Project $project, array $user): bool
+    private function serializeProject(Project $project, array $user): array
     {
-        if ($user['role'] === 'admin') {
-            return true;
-        }
+        $perms = $this->projectService()->projectPermissions($project, $user['id'], $user['role']);
 
-        return $project->ownerId === $user['id'];
+        return array_merge($project->toArray(), $perms);
     }
 
-    /** @param list<Project> $projects */
-    private function serializeProjects(array $projects): array
+    /**
+     * @param list<Project> $projects
+     * @param array{id: int, role: string} $user
+     */
+    private function serializeProjects(array $projects, array $user): array
     {
-        return array_map(static fn (Project $p): array => $p->toArray(), $projects);
+        return array_map(
+            fn (Project $p): array => $this->serializeProject($p, $user),
+            $projects,
+        );
     }
 }

@@ -19,7 +19,7 @@ class ProjectServiceTest extends TestCase
         $repository->method('findByOwner')->with(2)->willReturn([$project]);
 
         $service = new ProjectService($repository);
-        $result = $service->listForUser(2, false);
+        $result = $service->listForUser(2, 'project_manager');
 
         $this->assertCount(1, $result);
         $this->assertSame('Demo', $result[0]->name);
@@ -31,7 +31,7 @@ class ProjectServiceTest extends TestCase
         $repository->method('findAll')->willReturn([]);
 
         $service = new ProjectService($repository);
-        $result = $service->listForUser(1, true);
+        $result = $service->listForUser(1, 'admin');
 
         $this->assertIsArray($result);
     }
@@ -62,5 +62,29 @@ class ProjectServiceTest extends TestCase
         $result = $service->create(['name' => 'Nowy'], 5);
 
         $this->assertSame($project, $result['project']);
+    }
+
+    public function testProjectPermissionsForProjectManagerOwner(): void
+    {
+        $project = new Project(1, 'Demo', null, 2, 'active');
+        $repository = $this->createMock(ProjectRepository::class);
+        $service = new ProjectService($repository);
+
+        $perms = $service->projectPermissions($project, 2, 'project_manager');
+
+        $this->assertTrue($perms['can_edit']);
+        $this->assertTrue($perms['can_delete']);
+    }
+
+    public function testProjectPermissionsDenyRegularUser(): void
+    {
+        $project = new Project(1, 'Demo', null, 2, 'active');
+        $repository = $this->createMock(ProjectRepository::class);
+        $service = new ProjectService($repository);
+
+        $perms = $service->projectPermissions($project, 5, 'user');
+
+        $this->assertFalse($perms['can_edit']);
+        $this->assertFalse($perms['can_delete']);
     }
 }

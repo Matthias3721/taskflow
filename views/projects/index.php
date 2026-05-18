@@ -6,7 +6,8 @@
 
     <div id="project-form-wrap" class="project-form-wrap" hidden>
         <form id="project-form" class="form">
-            <h3>Nowy projekt</h3>
+            <h3 id="project-form-title">Nowy projekt</h3>
+            <input type="hidden" id="project-id" value="">
             <div id="project-form-error" class="form-error" hidden></div>
             <label for="project-name">Nazwa</label>
             <input type="text" id="project-name" name="name" required maxlength="255">

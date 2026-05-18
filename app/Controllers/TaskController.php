@@ -17,8 +17,11 @@ class TaskController extends Controller
             return $this->redirect('/login');
         }
 
+        $user = $this->currentUser();
+
         return Response::html($this->view('tasks.index', [
             'title' => 'Zadania',
+            'currentUser' => $user,
         ]));
     }
 
@@ -29,13 +32,10 @@ class TaskController extends Controller
         }
 
         $user = $this->currentUser();
-        $tasks = $this->taskService()->listForUser(
-            $user['id'],
-            $user['role'] === 'admin',
-        );
+        $tasks = $this->taskService()->listForUser($user['id'], $user['role']);
 
         return $this->json([
-            'tasks' => $this->serializeTasks($tasks),
+            'tasks' => $this->serializeTasks($tasks, $user),
         ]);
     }
 
@@ -49,7 +49,7 @@ class TaskController extends Controller
         $result = $this->taskService()->create(
             $request->json(),
             $user['id'],
-            $user['role'] === 'admin',
+            $user['role'],
         );
 
         if (isset($result['error'])) {
@@ -59,7 +59,7 @@ class TaskController extends Controller
 
         return $this->json([
             'message' => 'Zadanie utworzone.',
-            'task' => $result['task']->toArray(),
+            'task' => $this->serializeTask($result['task'], $user),
         ], 201);
     }
 
@@ -80,11 +80,11 @@ class TaskController extends Controller
         }
 
         $user = $this->currentUser();
-        if (!$this->taskService()->canAccess($task, $user['id'], $user['role'] === 'admin')) {
+        if (!$this->taskService()->canAccess($task, $user['id'], $user['role'])) {
             return $this->json(['message' => 'Brak dostępu do zadania.'], 403);
         }
 
-        return $this->json(['task' => $task->toArray()]);
+        return $this->json(['task' => $this->serializeTask($task, $user)]);
     }
 
     public function apiUpdate(Request $request): Response
@@ -103,7 +103,7 @@ class TaskController extends Controller
             $id,
             $request->json(),
             $user['id'],
-            $user['role'] === 'admin',
+            $user['role'],
         );
 
         if (isset($result['error'])) {
@@ -112,7 +112,7 @@ class TaskController extends Controller
 
         return $this->json([
             'message' => 'Zadanie zaktualizowane.',
-            'task' => $result['task']->toArray(),
+            'task' => $this->serializeTask($result['task'], $user),
         ]);
     }
 
@@ -131,7 +131,7 @@ class TaskController extends Controller
         $result = $this->taskService()->delete(
             $id,
             $user['id'],
-            $user['role'] === 'admin',
+            $user['role'],
         );
 
         if (!$result['success']) {
@@ -166,9 +166,23 @@ class TaskController extends Controller
         return $default;
     }
 
-    /** @param list<Task> $tasks */
-    private function serializeTasks(array $tasks): array
+    /** @param array{id: int, role: string} $user */
+    private function serializeTask(Task $task, array $user): array
     {
-        return array_map(static fn (Task $t): array => $t->toArray(), $tasks);
+        $perms = $this->taskService()->taskPermissions($task, $user['id'], $user['role']);
+
+        return array_merge($task->toArray(), $perms);
+    }
+
+    /**
+     * @param list<Task> $tasks
+     * @param array{id: int, role: string} $user
+     */
+    private function serializeTasks(array $tasks, array $user): array
+    {
+        return array_map(
+            fn (Task $t): array => $this->serializeTask($t, $user),
+            $tasks,
+        );
     }
 }

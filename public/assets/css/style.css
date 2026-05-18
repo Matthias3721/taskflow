@@ -321,6 +321,13 @@ a:hover {
     border-bottom: none;
 }
 
+.project-item-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .project-item-header {
     display: flex;
     align-items: center;
