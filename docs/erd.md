@@ -6,103 +6,103 @@ Schemat odpowiada plikowi [`database/init.sql`](../database/init.sql). Typy ENUM
 
 ```mermaid
 erDiagram
-    roles ||--o{ users : "ma"
-    users ||--|| user_profiles : "profil 1:1"
-    users ||--o{ projects : "właściciel (owner)"
-    users ||--o{ project_members : "członek"
-    projects ||--o{ project_members : "członkowie"
-    projects ||--o{ tasks : "zawiera"
-    users ||--o{ tasks : "przypisany (assignee)"
-    categories ||--o{ tasks : "kategoryzuje"
-    tasks ||--o{ task_status_history : "historia statusu"
-    users ||--o{ task_status_history : "zmienił (changed_by)"
-    users ||--o{ activity_logs : "wykonał akcję"
+    ROLES ||--o{ USERS : has
+    USERS ||--|| USER_PROFILES : has_profile
+    USERS ||--o{ PROJECTS : owns
+    USERS ||--o{ PROJECT_MEMBERS : belongs
+    PROJECTS ||--o{ PROJECT_MEMBERS : has_members
+    PROJECTS ||--o{ TASKS : has_tasks
+    USERS ||--o{ TASKS : assigned
+    CATEGORIES ||--o{ TASKS : groups
+    TASKS ||--o{ TASK_STATUS_HISTORY : has_history
+    USERS ||--o{ TASK_STATUS_HISTORY : changed_by
+    USERS ||--o{ ACTIVITY_LOGS : creates
 
-    roles {
-        serial id PK
-        varchar name UK
-        text description
-        timestamp created_at
+    ROLES {
+        int id
+        string name
+        string description
+        datetime created_at
     }
 
-    users {
-        serial id PK
-        varchar email UK
-        varchar name
-        varchar password_hash
-        int role_id FK
+    USERS {
+        int id
+        string email
+        string name
+        string password_hash
+        int role_id
         boolean is_active
-        timestamp created_at
-        timestamp updated_at
+        datetime created_at
+        datetime updated_at
     }
 
-    user_profiles {
-        int user_id PK_FK
-        varchar display_name
-        text bio
-        varchar avatar_url
-        varchar phone
-        varchar timezone
-        timestamp created_at
-        timestamp updated_at
+    USER_PROFILES {
+        int user_id
+        string display_name
+        string bio
+        string avatar_url
+        string phone
+        string timezone
+        datetime created_at
+        datetime updated_at
     }
 
-    projects {
-        serial id PK
-        varchar name
-        text description
-        project_status status
-        int owner_id FK
-        timestamp created_at
-        timestamp updated_at
+    PROJECTS {
+        int id
+        string name
+        string description
+        string status
+        int owner_id
+        datetime created_at
+        datetime updated_at
     }
 
-    project_members {
-        serial id PK
-        int project_id FK
-        int user_id FK
-        timestamp joined_at
+    PROJECT_MEMBERS {
+        int id
+        int project_id
+        int user_id
+        datetime joined_at
     }
 
-    categories {
-        serial id PK
-        varchar name UK
-        varchar color
-        timestamp created_at
+    CATEGORIES {
+        int id
+        string name
+        string color
+        datetime created_at
     }
 
-    tasks {
-        serial id PK
-        varchar title
-        text description
-        task_status status
-        task_priority priority
-        int project_id FK
-        int assignee_id FK
-        int category_id FK
+    TASKS {
+        int id
+        string title
+        string description
+        string status
+        string priority
+        int project_id
+        int assignee_id
+        int category_id
         date due_date
-        timestamp created_at
-        timestamp updated_at
+        datetime created_at
+        datetime updated_at
     }
 
-    task_status_history {
-        serial id PK
-        int task_id FK
-        task_status old_status
-        task_status new_status
-        int changed_by FK
-        timestamp changed_at
+    TASK_STATUS_HISTORY {
+        int id
+        int task_id
+        string old_status
+        string new_status
+        int changed_by
+        datetime changed_at
     }
 
-    activity_logs {
-        serial id PK
-        int user_id FK
-        varchar action
-        varchar entity_type
+    ACTIVITY_LOGS {
+        int id
+        int user_id
+        string action
+        string entity_type
         int entity_id
-        jsonb metadata
-        inet ip_address
-        timestamp created_at
+        string metadata
+        string ip_address
+        datetime created_at
     }
 ```
 

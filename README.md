@@ -456,59 +456,6 @@ Diagramy w Markdown renderują się na GitHubie/GitLabie oraz w podglądzie IDE 
 
 ---
 
-## 15. Checklista wymagań z regulaminu
-
-> Oznaczenia: **[x]** — spełnione w repozytorium; **[ ]** — do uzupełnienia / weryfikacji z prowadzącym.  
-> Jeśli regulamin przewiduje dodatkowe punkty, dopisz je na końcu listy.
-
-### Aplikacja i kod
-
-- [x] PHP 8.2+, programowanie obiektowe
-- [x] Architektura MVC bez frameworków PHP
-- [x] Własny router i warstwa HTTP (`app/Core`)
-- [x] Front-end: HTML5, CSS, JavaScript (Fetch API), bez frameworków UI
-- [x] REST API JSON pod `/api/...`
-- [x] Uwierzytelnianie i sesje użytkownika
-- [x] System ról (`admin`, `project_manager`, `user`)
-- [x] CRUD projektów, zadań, kategorii (z ograniczeniami ról)
-- [x] Panel dashboard ze statystykami
-- [x] Obsługa błędów HTTP (401, 403, 404, 500) — HTML i JSON
-- [x] Repozytorium Git z historią zmian
-- [ ] Pełna dokumentacja użytkownika / instrukcja PDF — **do uzupełnienia**, jeśli wymagana regulaminem
-
-### Baza danych
-
-- [x] PostgreSQL
-- [x] Relacja 1:1 (`user_profiles`)
-- [x] Relacje 1:N (np. `projects` → `tasks`)
-- [x] Relacja N:M (`project_members`)
-- [x] Co najmniej jeden widok SQL (`view_project_progress`, `view_user_task_summary`)
-- [x] Funkcja SQL (`calculate_project_progress`)
-- [x] Triggery na tabeli `tasks`
-- [x] Zapytania z JOIN
-- [x] Projekt schematu zgodny z 3NF (opis / diagram — patrz sekcja 8)
-- [ ] Jawne transakcje w kodzie PHP (PDO) — **do uzupełnienia**, jeśli wymagane osobno od triggerów
-
-### Środowisko i jakość
-
-- [x] Docker Compose (`app` + `postgres`)
-- [x] Plik `.env.example` i instrukcja uruchomienia w README
-- [x] Testy PHPUnit (`composer test`)
-- [x] Skrypt testowy endpointów (`test-endpoints.sh`)
-- [x] Dane testowe (`database/seed.sql`)
-
-### Dokumentacja i zaliczanie
-
-- [x] README.md po polsku z opisem projektu
-- [ ] Zrzuty ekranu w `docs/screenshots/` (wszystkie wymagane pliki)
-- [x] Diagram ERD (`docs/erd.md`)
-- [x] Diagram architektury (`docs/architecture.md`)
-- [ ] Opcjonalny eksport PNG diagramów
-- [ ] Konto testowe `project_manager` (np. `pm@taskflow.local`) — **brak w seedzie**
-- [ ] Punkty specyficzne regulaminu przedmiotu — **uzupełnij według aktualnego regulaminu**
-
----
-
 ## Autor
 
 **Mateusz Więcek**
