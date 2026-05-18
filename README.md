@@ -419,23 +419,35 @@ Poniższy scenariusz można wykonać w przeglądarce (http://localhost:8080) lub
 
 ## 13. Zrzuty ekranu
 
-Umieść pliki w katalogu `docs/screenshots/` (obecnie katalog może być pusty — dodaj zrzuty przed oddaniem projektu):
+Zrzuty znajdują się w katalogu [`docs/screenshots/`](docs/screenshots/).
 
 | Plik | Opis |
 |------|------|
-| [`docs/screenshots/login.png`](docs/screenshots/login.png) | Strona logowania |
-| [`docs/screenshots/dashboard-desktop.png`](docs/screenshots/dashboard-desktop.png) | Panel główny — widok desktop |
-| [`docs/screenshots/projects-desktop.png`](docs/screenshots/projects-desktop.png) | Lista projektów — desktop |
-| [`docs/screenshots/tasks-desktop.png`](docs/screenshots/tasks-desktop.png) | Lista zadań — desktop |
-| [`docs/screenshots/dashboard-mobile.png`](docs/screenshots/dashboard-mobile.png) | Panel główny — widok mobilny |
+| [`login.png`](docs/screenshots/login.png) | Strona logowania |
+| [`dashboard-desktop.png`](docs/screenshots/dashboard-desktop.png) | Panel główny — desktop |
+| [`projects-desktop.png`](docs/screenshots/projects-desktop.png) | Lista projektów — desktop |
+| [`tasks-desktop.png`](docs/screenshots/tasks-desktop.png) | Lista zadań — desktop |
+| [`dashboard-mobile.png`](docs/screenshots/dashboard-mobile.png) | Panel główny — mobile |
 
-Przykład w README (po dodaniu pliku):
+Dodatkowe (poza minimalnym zestawem):
 
-```markdown
+| Plik | Opis |
+|------|------|
+| [`projects-mobile.png`](docs/screenshots/projects-mobile.png) | Projekty — mobile |
+| [`users-desktop.png`](docs/screenshots/users-desktop.png) | Panel użytkowników (admin) |
+| [`categories-desktop.png`](docs/screenshots/categories-desktop.png) | Kategorie — desktop |
+
+### Podgląd
+
 ![Logowanie](docs/screenshots/login.png)
-```
 
-- [ ] Wszystkie wymagane screeny dodane do repozytorium
+![Panel główny — desktop](docs/screenshots/dashboard-desktop.png)
+
+![Projekty — desktop](docs/screenshots/projects-desktop.png)
+
+![Zadania — desktop](docs/screenshots/tasks-desktop.png)
+
+![Panel główny — mobile](docs/screenshots/dashboard-mobile.png)
 
 ---
 
