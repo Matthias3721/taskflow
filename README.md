@@ -215,9 +215,9 @@ Opcjonalny eksport PNG: [`docs/erd.png`](docs/erd.png)
 
 ---
 
-## 8. Wymagania bazodanowe
+## 8. Baza danych
 
-Poniżej zestawienie wymagań akademickich względem faktycznej implementacji w `database/init.sql` (oraz migracji `003_database_requirements.sql`).
+Aplikacja korzysta z **PostgreSQL**. Schemat i obiekty bazodanowe znajdują się w `database/init.sql` (migracje inkrementalne w `database/migrations/`). Model jest relacyjny: tabele encji, powiązania kluczami obcymi, widoki do raportowania, funkcja i triggery w PL/pgSQL oraz jawna transakcja PDO w warstwie aplikacji przy tworzeniu projektu.
 
 ### Relacje
 
@@ -229,43 +229,47 @@ Poniżej zestawienie wymagań akademickich względem faktycznej implementacji w 
 
 ### Widoki SQL
 
-- [x] `view_project_progress` — `INNER JOIN users`, `LEFT JOIN tasks`, agregacja `COUNT`, `FILTER`
-- [x] `view_user_task_summary` — `LEFT JOIN tasks` po `assignee_id`
+- **`view_project_progress`** — postęp projektów: `INNER JOIN` z `users`, `LEFT JOIN` z `tasks`, agregacja `COUNT` z `FILTER`
+- **`view_user_task_summary`** — podsumowanie zadań użytkownika: `LEFT JOIN` po `assignee_id`
+
+Widoki są używane m.in. w `DashboardRepository`.
 
 ### Funkcja SQL
 
-- [x] `calculate_project_progress(p_project_id INT) RETURNS NUMERIC` — procent zadań ze statusem `done`
+- **`calculate_project_progress(p_project_id)`** — zwraca procent zadań ze statusem `done` w danym projekcie (`RETURNS NUMERIC`)
 
 ### Triggery
 
-- [x] `update_tasks_updated_at` — `BEFORE UPDATE ON tasks` → ustawienie `updated_at`
-- [x] `log_task_status_change` — `AFTER UPDATE ON tasks` → wpis do `task_status_history` przy zmianie statusu
+- **`update_tasks_updated_at`** — `BEFORE UPDATE ON tasks` ustawia `updated_at`
+- **`log_task_status_change`** — `AFTER UPDATE ON tasks` zapisuje zmianę statusu w `task_status_history`
 
 ### Transakcje
 
-- [x] Bloki `BEGIN … END` w funkcjach i triggerach PL/pgSQL (atomowość operacji w triggerze)
-- [x] **Jawna transakcja PDO** przy `POST /api/projects` — `ProjectRepository::create()`:
-  1. `beginTransaction()`
-  2. `INSERT` do `projects`
-  3. `INSERT` właściciela do `project_members` (`ON CONFLICT DO NOTHING` — bez duplikatu)
-  4. `commit()`; przy wyjątku `rollBack()`
-  - Testy: `tests/ProjectRepositoryTest.php`
+W triggerach i funkcjach PL/pgSQL operacje są grupowane w blokach `BEGIN … END`.
+
+Przy **`POST /api/projects`** aplikacja wykonuje **jawną transakcję PDO** w `ProjectRepository::create()`:
+
+1. `beginTransaction()`
+2. `INSERT` do `projects`
+3. `INSERT` właściciela do `project_members` (`ON CONFLICT DO NOTHING`)
+4. `commit()` — przy błędzie `rollBack()`
+
+Zachowanie weryfikuje `tests/ProjectRepositoryTest.php`.
 
 ### JOIN
 
-- [x] Zapytania z `INNER JOIN`, `LEFT JOIN` w widokach (`init.sql`)
-- [x] Zapytania z JOIN w repozytoriach (np. `DashboardRepository`, `TaskRepository`, `ProjectRepository.findAccessibleForUser`)
+Zapytania z **`INNER JOIN`** i **`LEFT JOIN`** występują w widokach (`init.sql`) oraz w repozytoriach (`DashboardRepository`, `TaskRepository`, `ProjectRepository::findAccessibleForUser`).
 
-### Postać normalna (3NF)
+### Normalizacja (3NF)
 
-Projekt dąży do **3NF**:
+Schemat jest zaprojektowany zgodnie z **trzecią postacią normalną (3NF)**:
 
-- Dane o rolach w osobnej tabeli `roles` (brak powielania nazwy roli przy każdym użytkowniku)
-- Profil użytkownika wydzielony do `user_profiles` (zależność 1:1 od klucza `user_id`)
+- Role w osobnej tabeli `roles` (bez powielania nazwy roli przy użytkowniku)
+- Profil w `user_profiles` (zależność 1:1 względem `users.id`)
 - Kategorie jako słownik; zadania odwołują się przez `category_id`
-- Brak przechowywania zdenormalizowanych agregatów w tabelach bazowych — postęp projektu liczony w widoku / funkcji
+- Agregaty (np. postęp projektu) liczone w widokach i funkcji, nie trzymane redundantnie w tabelach bazowych
 
-Szczegółowy opis zależności funkcjonalnych: [ ] dokument PDF/Markdown przy ERD — **do uzupełnienia w dokumentacji projektowej**
+Szczegóły encji i powiązań: [`docs/erd.md`](docs/erd.md).
 
 ---
 
@@ -483,11 +487,7 @@ Dodatkowe (poza minimalnym zestawem):
 | [`docs/architecture.png`](docs/architecture.png) | Opcjonalny eksport diagramu architektury |
 | [`docs/erd.png`](docs/erd.png) | Opcjonalny eksport diagramu ERD |
 
-Diagramy w Markdown renderują się na GitHubie/GitLabie oraz w podglądzie IDE z obsługą Mermaid.
-
-- [x] Diagram architektury w `docs/architecture.md`
-- [x] Diagram ERD w `docs/erd.md`
-- [ ] Opcjonalne pliki PNG (`docs/architecture.png`, `docs/erd.png`) — eksport z podglądu Mermaid
+Diagramy w formacie Mermaid renderują się na GitHubie, GitLabie i w podglądzie Markdown w IDE. Eksport do PNG (`docs/architecture.png`, `docs/erd.png`) można wygenerować z podglądu Mermaid.
 
 ---
 
