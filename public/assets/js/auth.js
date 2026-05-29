@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
 function showError(el, message) {
     if (!el) return;
     el.textContent = message;
@@ -48,3 +47,4 @@ function hideError(el) {
     el.textContent = '';
     el.hidden = true;
 }
+
