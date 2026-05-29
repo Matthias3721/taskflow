@@ -60,8 +60,6 @@ W bazie zdefiniowane są role w tabeli `roles`: `admin`, `project_manager`, `use
 - Zarządza zadaniami w projektach, których jest właścicielem
 - Nie ma dostępu do panelu użytkowników ani mutacji kategorii (jak zwykły użytkownik przy kategoriach)
 
-> **Uwaga:** W pliku `database/seed.sql` nie ma konta e-mail `pm@taskflow.local`. Rolę `project_manager` można przypisać ręcznie w bazie lub przez panel admina po jego utworzeniu.
-
 ### Użytkownik (`user`)
 
 - Widzi projekty, do których ma dostęp (właściciel lub członek w `project_members`)
@@ -330,11 +328,12 @@ Hasła są zahashowane w `seed.sql` (bcrypt). Po świeżym seedzie:
 | E-mail | Hasło | Rola w systemie |
 |--------|-------|-----------------|
 | `admin@taskflow.local` | `admin123` | `admin` |
+| `pm@taskflow.local` | `pm123` | `project_manager` |
 | `user@taskflow.local` | `user123` | `user` |
 
-**Konto `pm@taskflow.local`:** **nie występuje** w `database/seed.sql`. Rola `project_manager` istnieje w tabeli `roles` — aby ją przetestować, utwórz użytkownika ręcznie lub zmień rolę istniejącego konta w panelu administratora.
+Hasła są zahashowane w `database/seed.sql` (bcrypt, zgodne z `password_verify` w PHP).
 
-Przykładowe dane demonstracyjne po seedzie: projekty „TaskFlow MVP”, „Demo”, przykładowe zadania i kategorie (Błąd, Funkcja, Dokumentacja).
+Po seedzie: projekty m.in. **TaskFlow MVP**, **Website Redesign**, **Mobile App Launch**, **Documentation Update**; kategorie **Development**, **Bug**, **Design**, **Documentation**; przykładowe zadania (logowanie, panel projektów, widok zadań, testy API, README, responsywność).
 
 ---
 
@@ -378,42 +377,39 @@ Poniższy scenariusz można wykonać w przeglądarce (http://localhost:8080) lub
 2. Zaloguj się jako **admin** (`admin@taskflow.local` / `admin123`) — przekierowanie na dashboard, w menu widoczna pozycja „Użytkownicy”.
 3. Wyloguj (przycisk w sidebarze) — powrót do stanu niezalogowanego.
 4. Zaloguj się jako **user** (`user@taskflow.local` / `user123`) — brak pozycji „Użytkownicy” w menu.
+5. Zaloguj się jako **project_manager** (`pm@taskflow.local` / `pm123`) — widoczne własne projekty (np. Website Redesign), brak panelu użytkowników.
 
 ### B. Role i odmowa dostępu
 
-5. Jako **user** otwórz w przeglądarce `/users` — oczekiwana strona **403**.
-6. Jako **user** wywołaj `GET /api/users` (np. DevTools → Network po wejściu na stronę, lub curl z ciasteczkiem sesji) — odpowiedź **403** JSON.
-7. Wywołaj `GET /api/me` **bez** ciasteczka sesji — **401**.
+6. Jako **user** otwórz w przeglądarce `/users` — oczekiwana strona **403**.
+7. Jako **user** wywołaj `GET /api/users` — odpowiedź **403** JSON.
+8. Wywołaj `GET /api/me` **bez** ciasteczka sesji — **401**.
 
 ### C. CRUD projektów
 
-8. Jako **admin** przejdź do `/projects`, kliknij **Nowy projekt**, uzupełnij formularz, zapisz — projekt na liście.
-9. Edytuj projekt (status, opis) — zapis przez API `PUT`.
-10. Usuń projekt testowy — potwierdzenie w UI, `DELETE /api/projects/{id}`.
-11. Jako **user** utwórz własny projekt — powinien się pojawić na liście z możliwością edycji (właściciel).
-12. Jako **user** sprawdź, że przy projekcie należącym do admina (z seeda) **nie** ma przycisków Edytuj/Usuń (jeśli nie jesteś właścicielem).
+9. Jako **admin** przejdź do `/projects`, utwórz/edytuj projekt — zapis przez API.
+10. Jako **pm** edytuj projekt **Website Redesign** (właściciel) — powinno działać; projekt admina bez uprawnień do edycji (jeśli nie jesteś członkiem z uprawnieniami).
+11. Jako **user** sprawdź dostęp do **TaskFlow MVP** jako członek — widoczność bez przycisków Edytuj/Usuń u właściciela admina.
 
 ### D. CRUD zadań
 
-13. Przejdź do `/tasks` jako **admin** — widoczne zadania ze wszystkich projektów.
-14. Utwórz zadanie: tytuł, projekt, opcjonalnie kategoria, assignee — `POST /api/tasks`.
-15. Zmień status na `in_progress`, potem `done` — w bazie powinien powstać wpis w `task_status_history` (trigger).
-16. Jako **user** zaloguj się ponownie — widać zadania przypisane do Jan Kowalski (seed); edycja statusu/opisu dozwolona, usuwanie zablokowane.
+12. Przejdź do `/tasks` jako **admin** — widoczne zadania ze wszystkich projektów (seed: m.in. „Implementacja logowania”, „Testy endpointów”).
+13. Jako **user** — zadania przypisane do Jan Kowalski; edycja statusu/opisu dozwolona, usuwanie zablokowane.
+14. Zmiana statusu zadania — wpis w `task_status_history` (trigger).
 
 ### E. Kategorie
 
-17. Jako **admin** wejdź na `/categories` — dodaj, edytuj, usuń kategorię.
-18. Jako **user** spróbuj utworzyć kategorię przez API — **403** / komunikat o braku uprawnień.
+15. Jako **admin** wejdź na `/categories` — kategorie seed: Development, Bug, Design, Documentation.
+16. Jako **user** spróbuj utworzyć kategorię przez API — **403** / brak uprawnień.
 
 ### F. Dashboard
 
-19. Jako **admin** otwórz `/dashboard` — kafelki statystyk i lista postępu projektów (pasek z procentem).
-20. Jako **user** — dashboard ograniczony do projektów, do których masz dostęp (właściciel lub `project_members`).
+17. Jako **admin** otwórz `/dashboard` — kafelki statystyk i postęp projektów.
+18. Jako **user** — dashboard z projektami, do których masz dostęp (członek lub zadania).
 
 ### G. Podsumowanie 403 / 401
 
-21. Uruchom `docker compose exec app bash test-endpoints.sh` — wszystkie asercje `[PASS]`.
-22. [ ] Scenariusz dla roli `project_manager` — **do uzupełnienia** po utworzeniu konta testowego PM.
+19. Uruchom `docker compose exec app bash test-endpoints.sh` — wszystkie asercje `[PASS]`.
 
 ---
 
