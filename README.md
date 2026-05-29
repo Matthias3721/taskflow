@@ -12,7 +12,7 @@ TaskFlow łączy panel administracyjny z codzienną pracą użytkownika: logowan
 
 Główne obszary systemu:
 
-- **Uwierzytelnianie** — rejestracja, logowanie, wylogowanie, sesja PHP
+- **Uwierzytelnianie** — rejestracja (`POST /api/register`, strona `/register`), logowanie, wylogowanie, sesja PHP (bez auto-logowania po rejestracji)
 - **Projekty** — tworzenie, edycja, usuwanie (zależnie od roli), statusy: `active`, `on_hold`, `completed`
 - **Zadania** — przypisanie do projektu, statusy `todo` / `in_progress` / `done`, priorytety, kategorie, termin
 - **Kategorie** — słownik kategorii zadań (zarządzanie przez administratora)
@@ -27,16 +27,16 @@ Aplikacja dostępna domyślnie pod adresem: **http://localhost:8080**
 
 | Obszar | Opis |
 |--------|------|
-| **Auth** | `POST /api/login`, `POST /api/logout`, `GET /api/me`, strony `/login`, `/register` |
+| **Auth** | `POST /api/register`, `POST /api/login`, `POST /api/logout`, `GET /api/me`, strony `/login`, `/register` (`auth.js`) |
 | **Dashboard** | Statystyki projektów/zadań, lista postępu z widoku `view_project_progress` |
-| **Projekty** | Lista, formularz tworzenia/edycji, usuwanie; API REST pod `/api/projects` |
+| **Projekty** | Lista, formularz tworzenia/edycji, usuwanie; API REST pod `/api/projects`; tworzenie w transakcji PDO (projekt + wpis właściciela w `project_members`) |
 | **Zadania** | Lista z filtrami uprawnień, CRUD przez `/api/tasks`; ograniczona edycja dla roli `user` |
 | **Kategorie** | CRUD kategorii (`/api/categories`) — mutacje tylko dla `admin` |
 | **Użytkownicy** | Panel `/users` i API `/api/users` — wyłącznie `admin` |
 | **Błędy** | Strony HTML: 400, 401, 403, 404, 500; API zwraca JSON z komunikatem |
 | **Testy** | PHPUnit (serwisy), skrypt `test-endpoints.sh` (integracja API) |
 
-Front-end: responsywny layout (sidebar, widoki Dashboard i Projects w jasnym stylu SaaS), komunikacja wyłącznie przez **Fetch API** i wspólny moduł `TaskFlow` w `public/assets/js/app.js`.
+Front-end: responsywny layout (sidebar, widoki Dashboard i Projects w jasnym stylu SaaS). API: **Fetch API** (`TaskFlow.fetchJson` w `app.js`; logowanie i rejestracja w `auth.js`, ładowanym na `/login` i `/register` po `app.js`).
 
 ---
 
@@ -244,7 +244,12 @@ Poniżej zestawienie wymagań akademickich względem faktycznej implementacji w 
 ### Transakcje
 
 - [x] Bloki `BEGIN … END` w funkcjach i triggerach PL/pgSQL (atomowość operacji w triggerze)
-- [x] Jawna transakcja PDO przy tworzeniu projektu (`POST /api/projects`): `ProjectRepository::create()` — `beginTransaction()`, insert do `projects`, wpis właściciela do `project_members` (`ON CONFLICT DO NOTHING`), `commit()` / `rollBack()` przy błędzie
+- [x] **Jawna transakcja PDO** przy `POST /api/projects` — `ProjectRepository::create()`:
+  1. `beginTransaction()`
+  2. `INSERT` do `projects`
+  3. `INSERT` właściciela do `project_members` (`ON CONFLICT DO NOTHING` — bez duplikatu)
+  4. `commit()`; przy wyjątku `rollBack()`
+  - Testy: `tests/ProjectRepositoryTest.php`
 
 ### JOIN
 
@@ -321,9 +326,11 @@ docker compose up -d --build
 
 ---
 
-## 10. Konta testowe
+## 10. Konta testowe i rejestracja
 
-Hasła są zahashowane w `seed.sql` (bcrypt). Po świeżym seedzie:
+### Konta z seeda (`database/seed.sql`)
+
+Hasła są zahashowane (bcrypt, `password_verify` w PHP):
 
 | E-mail | Hasło | Rola w systemie |
 |--------|-------|-----------------|
@@ -331,9 +338,28 @@ Hasła są zahashowane w `seed.sql` (bcrypt). Po świeżym seedzie:
 | `pm@taskflow.local` | `pm123` | `project_manager` |
 | `user@taskflow.local` | `user123` | `user` |
 
-Hasła są zahashowane w `database/seed.sql` (bcrypt, zgodne z `password_verify` w PHP).
+Dane demonstracyjne po seedzie:
 
-Po seedzie: projekty m.in. **TaskFlow MVP**, **Website Redesign**, **Mobile App Launch**, **Documentation Update**; kategorie **Development**, **Bug**, **Design**, **Documentation**; przykładowe zadania (logowanie, panel projektów, widok zadań, testy API, README, responsywność).
+- **Projekty:** TaskFlow MVP, Website Redesign, Mobile App Launch, Documentation Update (właściciele: admin / PM; user jako członek i assignee zadań)
+- **Kategorie:** Development, Bug, Design, Documentation
+- **Zadania (przykłady):** Implementacja logowania, Panel projektów, Widok zadań, Testy endpointów, Dokumentacja README, Poprawa responsywności
+- **Profile:** `user_profiles` dla wszystkich trzech kont seedowych
+
+### Rejestracja nowego użytkownika
+
+- **UI:** http://localhost:8080/register — formularz `#register-form`, skrypt `public/assets/js/auth.js`
+- **API:** `POST /api/register` (JSON: `name`, `email`, `password`, `password_confirmation`)
+- **Warstwy:** `AuthController::register` → `AuthService::register` → `UserRepository::create`
+- Nowe konto zawsze otrzymuje rolę **`user`** (`is_active = true`); pola `role` z żądania są ignorowane
+- Hasło: `password_hash()`; walidacja (unikalny e-mail, min. 6 znaków, zgodność haseł) → błąd **400** JSON; sukces **201** JSON
+- Po sukcesie: komunikat w UI, przekierowanie na `/login` — **bez** automatycznego logowania
+- Rejestracja przez API (np. PowerShell):
+
+```powershell
+Invoke-RestMethod -Uri http://localhost:8080/api/register -Method POST `
+  -ContentType 'application/json' `
+  -Body '{"name":"Jan Test","email":"jan@example.com","password":"haslo123","password_confirmation":"haslo123"}'
+```
 
 ---
 
@@ -353,7 +379,7 @@ Równoważnie:
 docker compose run --rm app ./vendor/bin/phpunit
 ```
 
-Pliki testów: `tests/AuthServiceTest.php`, `ProjectServiceTest.php`, `TaskServiceTest.php`, `UserServiceTest.php`.
+Pliki testów: `tests/AuthServiceTest.php` (logowanie + rejestracja), `ProjectServiceTest.php`, `ProjectRepositoryTest.php` (transakcja przy tworzeniu projektu), `TaskServiceTest.php`, `UserServiceTest.php`.
 
 ### Test integracyjny endpointów
 
@@ -363,7 +389,7 @@ Przy działającej aplikacji (`docker compose up -d`):
 docker compose exec app bash test-endpoints.sh
 ```
 
-Skrypt sprawdza m.in.: `401` bez sesji, logowanie admina i usera, `403` dla usera na `/api/users` i `/users`, dostęp admina do chronionych endpointów.
+Skrypt sprawdza m.in.: `401` bez sesji, `POST /api/register` (201 + duplikat e-mail 400, brak auto-logowania), logowanie admina i usera, `403` dla usera na `/api/users` i `/users`, dostęp admina do chronionych endpointów.
 
 ---
 
@@ -371,45 +397,46 @@ Skrypt sprawdza m.in.: `401` bez sesji, logowanie admina i usera, `403` dla user
 
 Poniższy scenariusz można wykonać w przeglądarce (http://localhost:8080) lub częściowo przez API (np. DevTools / curl).
 
-### A. Logowanie i sesja
+### A. Rejestracja i logowanie
 
-1. Wejdź na `/login`.
-2. Zaloguj się jako **admin** (`admin@taskflow.local` / `admin123`) — przekierowanie na dashboard, w menu widoczna pozycja „Użytkownicy”.
-3. Wyloguj (przycisk w sidebarze) — powrót do stanu niezalogowanego.
-4. Zaloguj się jako **user** (`user@taskflow.local` / `user123`) — brak pozycji „Użytkownicy” w menu.
-5. Zaloguj się jako **project_manager** (`pm@taskflow.local` / `pm123`) — widoczne własne projekty (np. Website Redesign), brak panelu użytkowników.
+1. Wejdź na `/register`, utwórz konto (unikalny e-mail, hasło min. 6 znaków) — w konsoli `register submit fired`, w Network `POST /api/register`, potem przekierowanie na `/login`.
+2. Zaloguj się nowym kontem — rola `user`, brak panelu „Użytkownicy”.
+3. Zaloguj się jako **admin** (`admin@taskflow.local` / `admin123`) — dashboard, menu „Użytkownicy”.
+4. Wyloguj — powrót do stanu niezalogowanego.
+5. Zaloguj się jako **user** (`user@taskflow.local` / `user123`).
+6. Zaloguj się jako **project_manager** (`pm@taskflow.local` / `pm123`) — własne projekty (np. Website Redesign, Mobile App Launch).
 
 ### B. Role i odmowa dostępu
 
-6. Jako **user** otwórz w przeglądarce `/users` — oczekiwana strona **403**.
-7. Jako **user** wywołaj `GET /api/users` — odpowiedź **403** JSON.
-8. Wywołaj `GET /api/me` **bez** ciasteczka sesji — **401**.
+7. Jako **user** otwórz `/users` — strona **403**.
+8. Jako **user** wywołaj `GET /api/users` — **403** JSON.
+9. Wywołaj `GET /api/me` bez sesji — **401**.
 
 ### C. CRUD projektów
 
-9. Jako **admin** przejdź do `/projects`, utwórz/edytuj projekt — zapis przez API.
-10. Jako **pm** edytuj projekt **Website Redesign** (właściciel) — powinno działać; projekt admina bez uprawnień do edycji (jeśli nie jesteś członkiem z uprawnieniami).
-11. Jako **user** sprawdź dostęp do **TaskFlow MVP** jako członek — widoczność bez przycisków Edytuj/Usuń u właściciela admina.
+10. Jako **admin** na `/projects` utwórz projekt — `POST /api/projects`; w bazie jednocześnie wpis w `projects` i właściciel w `project_members` (transakcja PDO w `ProjectRepository::create`).
+11. Jako **pm** edytuj **Website Redesign** (właściciel PM).
+12. Jako **user** sprawdź **TaskFlow MVP** jako członek — bez Edytuj/Usuń u projektu admina.
 
 ### D. CRUD zadań
 
-12. Przejdź do `/tasks` jako **admin** — widoczne zadania ze wszystkich projektów (seed: m.in. „Implementacja logowania”, „Testy endpointów”).
-13. Jako **user** — zadania przypisane do Jan Kowalski; edycja statusu/opisu dozwolona, usuwanie zablokowane.
-14. Zmiana statusu zadania — wpis w `task_status_history` (trigger).
+13. `/tasks` jako **admin** — zadania ze wszystkich projektów (seed).
+14. Jako **user** — zadania przypisane do Jan Kowalski; edycja statusu/opisu, bez usuwania.
+15. Zmiana statusu — wpis w `task_status_history` (trigger).
 
 ### E. Kategorie
 
-15. Jako **admin** wejdź na `/categories` — kategorie seed: Development, Bug, Design, Documentation.
-16. Jako **user** spróbuj utworzyć kategorię przez API — **403** / brak uprawnień.
+16. `/categories` jako **admin** — Development, Bug, Design, Documentation.
+17. Jako **user** — mutacja kategorii przez API: **403**.
 
 ### F. Dashboard
 
-17. Jako **admin** otwórz `/dashboard` — kafelki statystyk i postęp projektów.
-18. Jako **user** — dashboard z projektami, do których masz dostęp (członek lub zadania).
+18. `/dashboard` jako **admin** i **user** — statystyki i postęp (zależnie od dostępu do projektów).
 
-### G. Podsumowanie 403 / 401
+### G. Testy automatyczne
 
-19. Uruchom `docker compose exec app bash test-endpoints.sh` — wszystkie asercje `[PASS]`.
+19. `docker compose run --rm app composer test` — m.in. rejestracja i transakcja projektu.
+20. `docker compose exec app bash test-endpoints.sh` — wszystkie asercje `[PASS]`.
 
 ---
 
