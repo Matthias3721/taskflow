@@ -244,7 +244,7 @@ Poniżej zestawienie wymagań akademickich względem faktycznej implementacji w 
 ### Transakcje
 
 - [x] Bloki `BEGIN … END` w funkcjach i triggerach PL/pgSQL (atomowość operacji w triggerze)
-- [ ] Jawne transakcje PDO (`beginTransaction` / `commit` / `rollBack`) w warstwie PHP — **do uzupełnienia**, jeśli wymagane przez regulamin jako osobny punkt w aplikacji
+- [x] Jawna transakcja PDO przy tworzeniu projektu (`POST /api/projects`): `ProjectRepository::create()` — `beginTransaction()`, insert do `projects`, wpis właściciela do `project_members` (`ON CONFLICT DO NOTHING`), `commit()` / `rollBack()` przy błędzie
 
 ### JOIN
 

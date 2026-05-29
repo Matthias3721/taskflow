@@ -64,6 +64,17 @@ class ProjectServiceTest extends TestCase
         $this->assertSame($project, $result['project']);
     }
 
+    public function testCreateDoesNotCallRepositoryWhenValidationFails(): void
+    {
+        $repository = $this->createMock(ProjectRepository::class);
+        $repository->expects($this->never())->method('create');
+
+        $service = new ProjectService($repository);
+        $result = $service->create(['name' => 'Test', 'status' => 'invalid'], 1);
+
+        $this->assertSame('Nieprawidłowy status projektu.', $result['error']);
+    }
+
     public function testProjectPermissionsForProjectManagerOwner(): void
     {
         $project = new Project(1, 'Demo', null, 2, 'active');

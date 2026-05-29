@@ -92,7 +92,42 @@ class ProjectRepository
         return array_map(static fn (array $row): Project => Project::fromArray($row), $rows);
     }
 
+    /**
+     * Tworzy projekt i dodaje właściciela do project_members w jednej transakcji PDO.
+     */
     public function create(string $name, ?string $description, string $status, int $ownerId): Project
+    {
+        $this->db->beginTransaction();
+
+        try {
+            $project = $this->insertProject($name, $description, $status, $ownerId);
+            $this->addMemberIfNotExists($project->id, $ownerId);
+            $this->db->commit();
+
+            return $project;
+        } catch (\Throwable $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            throw $e;
+        }
+    }
+
+    public function addMemberIfNotExists(int $projectId, int $userId): void
+    {
+        $stmt = $this->db->prepare(
+            'INSERT INTO project_members (project_id, user_id)
+             VALUES (:project_id, :user_id)
+             ON CONFLICT (project_id, user_id) DO NOTHING',
+        );
+        $stmt->execute([
+            'project_id' => $projectId,
+            'user_id' => $userId,
+        ]);
+    }
+
+    private function insertProject(string $name, ?string $description, string $status, int $ownerId): Project
     {
         $stmt = $this->db->prepare(
             'INSERT INTO projects (name, description, status, owner_id)
