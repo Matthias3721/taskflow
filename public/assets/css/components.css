@@ -1,0 +1,303 @@
+/* TaskFlow - components */
+/* --- Przyciski --- */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.55rem 1.15rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--transition), border-color var(--transition), color var(--transition), box-shadow var(--transition);
+    text-decoration: none;
+}
+
+.btn:hover {
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: var(--color-accent);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+.btn:not(.btn-primary) {
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+.btn:not(.btn-primary):hover:not(:disabled) {
+    background: var(--color-surface-muted);
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-danger {
+    color: var(--color-error);
+    border-color: #fecaca;
+    background: var(--color-surface);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: var(--color-error-bg);
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+.btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-sm:hover:not(:disabled) {
+    border-color: var(--color-accent-muted);
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+}
+
+.btn-sm:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+
+.message {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.message-error {
+    background: var(--color-error-bg);
+    border-color: #fecaca;
+    color: var(--color-error);
+}
+
+.message-info {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-muted);
+    color: var(--color-accent-hover);
+}
+
+.message-success {
+    background: var(--color-success-bg);
+    border-color: #a7f3d0;
+    color: var(--color-success);
+}
+
+.message-warning {
+    background: var(--color-warning-bg);
+    border-color: #fde68a;
+    color: var(--color-warning);
+}
+
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
+}
+
+.empty-state-icon {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+    border-radius: 14px;
+    background: var(--color-accent-soft);
+    position: relative;
+}
+
+.empty-state-icon--projects::after,
+.empty-state-icon--folder::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 1.25rem;
+    height: 1rem;
+    border: 2px solid var(--color-accent);
+    border-radius: 3px;
+    opacity: 0.65;
+}
+
+.empty-state-icon--folder::after {
+    border-radius: 2px 2px 4px 4px;
+}
+
+.empty-state-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.empty-state-text {
+    margin: 0;
+    max-width: 22rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    line-height: 1.5;
+}
+
+.btn-empty-cta {
+    margin-top: 1.25rem;
+}
+
+
+.data-list,
+.detail-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.card-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.project-form-wrap {
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.28rem 0.6rem;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+}
+
+.status-badge--active {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.status-badge--on_hold {
+    background: var(--color-warning-bg);
+    color: #b45309;
+}
+
+.status-badge--completed {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    min-height: 8px;
+    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 55%, #a855f7 100%);
+    border-radius: inherit;
+    display: block;
+    transition: width 0.25s ease;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+}
+
+.users-table th,
+.users-table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.users-table th {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    background: var(--color-surface-muted);
+}
+
+.users-table th:first-child {
+    border-radius: var(--radius) 0 0 0;
+}
+
+.users-table th:last-child {
+    border-radius: 0 var(--radius) 0 0;
+}
+
+.users-table tbody tr:hover td {
+    background: var(--color-surface-muted);
+}
+
+.users-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-role-select {
+    max-width: 200px;
+}
+
+.user-status {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-pill);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-active {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.status-inactive {
+    background: var(--color-error-bg);
+    color: var(--color-error);
+}
+
+.category-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 0.35rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}
+

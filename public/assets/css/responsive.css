@@ -1,0 +1,241 @@
+/* TaskFlow - responsive */
+/* --- Responsywność --- */
+
+@media (max-width: 900px) {
+    .main-content {
+        padding: 1.25rem 1.25rem 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 640px) {
+    .project-card {
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .project-card-body {
+        flex: 1;
+    }
+
+    .project-card-footer {
+        flex-direction: column;
+        justify-content: center;
+        align-self: stretch;
+        width: auto;
+        min-width: 7.5rem;
+        border-top: none;
+        border-left: 1px solid var(--color-border);
+    }
+}
+
+@media (max-width: 768px) {
+    body.sidebar-open {
+        overflow: hidden;
+    }
+
+    .app-shell {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .main-wrap {
+        width: 100%;
+        max-width: 100%;
+        margin-left: 0;
+        min-width: 0;
+    }
+
+    .main-content,
+    .content {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow-x: hidden;
+    }
+
+    .mobile-topbar {
+        display: flex;
+    }
+
+    .page-header {
+        display: none;
+    }
+
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 280px;
+        max-width: 85vw;
+        height: 100dvh;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        visibility: visible;
+        box-shadow: var(--shadow-lg);
+    }
+
+    body.sidebar-open .sidebar {
+        transform: translateX(0);
+    }
+
+    .sidebar-close {
+        display: flex;
+    }
+
+    .form {
+        max-width: none;
+    }
+
+    .page-intro--toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-intro--toolbar .btn-primary {
+        width: 100%;
+    }
+
+    .page-intro-title {
+        font-size: 1.5rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .stat-card {
+        padding: 1rem 1.1rem;
+    }
+
+    .stat-value {
+        font-size: 1.625rem;
+    }
+
+    .project-form-wrap {
+        padding: 1.15rem;
+    }
+
+    .project-card {
+        flex-direction: column;
+    }
+
+    .project-card-footer {
+        flex-direction: row;
+        justify-content: stretch;
+        border-left: none;
+        border-top: 1px solid var(--color-border);
+        width: 100%;
+        min-width: 0;
+    }
+
+    .project-card-footer .btn {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.65rem 0.5rem;
+        font-size: 0.8125rem;
+    }
+
+    .user-role-select {
+        max-width: 140px;
+    }
+
+    .auth-card {
+        padding: 1.5rem;
+        margin: 0;
+        border-radius: var(--radius);
+    }
+
+    .data-list,
+    .detail-card,
+    section {
+        max-width: 100%;
+        min-width: 0;
+    }
+}
+
+@media (min-width: 769px) {
+    .page-intro-title {
+        font-size: 1.875rem;
+    }
+
+    .app-shell {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+    }
+
+    .sidebar {
+        position: static;
+        flex-shrink: 0;
+        width: var(--sidebar-width);
+        height: auto;
+        transform: none;
+        transition: none;
+        z-index: auto;
+    }
+
+    .main-wrap {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .main-content,
+    .content {
+        padding: 1.5rem 2rem 2.5rem;
+        overflow-x: auto;
+    }
+
+    .mobile-topbar {
+        display: none !important;
+    }
+
+    .mobile-backdrop {
+        display: none !important;
+    }
+
+    .page-header {
+        display: block;
+    }
+
+    .sidebar-close {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    .project-item-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .users-table {
+        font-size: 0.75rem;
+    }
+}

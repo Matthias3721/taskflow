@@ -1,0 +1,435 @@
+/* TaskFlow - pages */
+
+.page-view {
+    max-width: 1100px;
+    width: 100%;
+    min-width: 0;
+}
+
+.main-content:has(> .page-view) > .page-header {
+    display: none;
+}
+
+.page-intro {
+    margin-bottom: 1.75rem;
+}
+
+.page-intro-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.page-intro-desc {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--color-muted);
+    line-height: 1.5;
+}
+
+.page-intro--toolbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.page-intro--toolbar .btn-primary {
+    flex-shrink: 0;
+    box-shadow: 0 2px 10px rgba(79, 70, 229, 0.28);
+}
+
+.section-heading {
+    margin: 0 0 1rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: -0.01em;
+}
+
+.loading-placeholder {
+    margin: 0;
+    font-size: 0.9375rem;
+}
+
+/* --- Puste stany --- */
+/* --- Dashboard --- */
+
+.dashboard-section {
+    margin-top: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition), border-color var(--transition);
+    min-width: 0;
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-accent-muted);
+}
+
+.stat-card-icon {
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 12px;
+    position: relative;
+}
+
+.stat-card-icon--projects {
+    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+    box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.12);
+}
+
+.stat-card-icon--tasks {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.12);
+}
+
+.stat-card-icon--done {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.15);
+}
+
+.stat-card-icon--projects::before,
+.stat-card-icon--tasks::before,
+.stat-card-icon--done::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    border-radius: 2px;
+}
+
+.stat-card-icon--projects::before {
+    width: 14px;
+    height: 11px;
+    border: 2px solid #4f46e5;
+    border-radius: 3px;
+    box-shadow: -4px 4px 0 -1px #818cf8;
+}
+
+.stat-card-icon--tasks::before {
+    width: 12px;
+    height: 12px;
+    border: 2px solid #7c3aed;
+    border-radius: 3px;
+}
+
+.stat-card-icon--done::before {
+    width: 8px;
+    height: 14px;
+    border: solid #059669;
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(45deg) translate(-1px, -2px);
+    background: transparent;
+    border-radius: 0;
+}
+
+.stat-card-content {
+    min-width: 0;
+}
+
+.stat-card-label {
+    margin: 0 0 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.stat-value {
+    margin: 0;
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.stat-card--projects .stat-value {
+    color: #4f46e5;
+}
+
+.stat-card--tasks .stat-value {
+    color: #6d28d9;
+}
+
+.stat-card--done .stat-value {
+    color: #059669;
+}
+
+/* --- Karty / listy danych --- */
+
+.project-form-wrap {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+}
+
+.form-card-title {
+    margin: 0 0 1.25rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.project-form-wrap .form,
+.form-card {
+    max-width: none;
+}
+
+/* --- Projekty (karty) --- */
+
+.project-cards {
+    width: 100%;
+    min-width: 0;
+}
+
+.project-cards-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.project-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    min-width: 0;
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.project-card:hover {
+    border-color: var(--color-accent-muted);
+    box-shadow: var(--shadow-md);
+}
+
+.project-card-body {
+    padding: 1.15rem 1.25rem;
+    min-width: 0;
+}
+
+.project-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.project-card-title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.project-card-desc {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.project-card-desc--empty {
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.project-card-owner {
+    margin: 0.65rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+}
+
+.project-card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-surface-muted);
+}
+
+/* Listy projektów / zadań */
+
+.project-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.project-item {
+    padding: 1rem 1.15rem;
+    background: var(--color-surface-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.project-item:hover {
+    border-color: var(--color-accent-muted);
+    box-shadow: var(--shadow-sm);
+}
+
+.project-item-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.project-item-header strong {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.project-badge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    white-space: nowrap;
+}
+
+.project-desc {
+    margin: 0.4rem 0 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    line-height: 1.45;
+}
+
+.project-item-actions {
+    margin-top: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Postęp (dashboard) */
+
+.progress-cards {
+    width: 100%;
+    min-width: 0;
+}
+
+.progress-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.progress-card {
+    padding: 1.15rem 1.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+}
+
+.progress-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.65rem;
+}
+
+.progress-card-title-wrap {
+    min-width: 0;
+}
+
+.progress-card-title {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.progress-card-owner {
+    display: block;
+    margin-top: 0.2rem;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    font-weight: 400;
+}
+
+.progress-card-percent {
+    flex-shrink: 0;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-accent);
+    white-space: nowrap;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    margin: 0;
+    display: block;
+}
+
+.progress-card-meta {
+    margin: 0.5rem 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+}
+
+/* --- Panel użytkowników --- */
+
+.users-panel {
+    overflow-x: auto;
+}
